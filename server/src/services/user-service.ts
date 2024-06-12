@@ -48,11 +48,14 @@ export default class UserService {
         })
     }
 
-    async getUsers(): Promise<QueryResult | Error> {
+    async getUsers(page = 1, limit = 10): Promise<QueryResult | Error> {
         return new Promise(async (resolve, reject) => {
             try {
+                const offset = (page - 1) * limit;
+                const query = 'SELECT id, email, fullName, createdAt, updatedAt FROM Users LIMIT ? OFFSET ?';
                 const [result] = await db.query(
-                    'SELECT id, email, fullName, createdAt, updatedAt FROM Users',
+                    query,
+                    [limit, offset]
                 );
                 return resolve(result);
             } catch (error) {
