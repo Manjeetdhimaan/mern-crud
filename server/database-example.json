@@ -1,0 +1,18 @@
+{
+    "development": {
+        "driver": "mysql",
+        "host": "host",
+        "database": "databasename",
+        "user": "root",
+        "password": "password",
+        "port": 13645
+    },
+    "production": {
+        "driver": "mysql",
+        "host": "host",
+        "database": "databasename",
+        "user": "root",
+        "password": "password",
+        "port": 13645
+    }
+}
