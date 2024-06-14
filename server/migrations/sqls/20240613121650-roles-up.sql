@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS Roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    normalized VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    grants JSON NOT NULL
+);

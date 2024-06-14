@@ -3,16 +3,21 @@ import jwt from "jsonwebtoken";
 
 import { failAction } from "../utils/response";
 
-
 export interface IRequest extends Request {
     _id: string,
     _email: string
 }
-
 export default class JwtHelper {
-    util = require('util');
-    verifyJwtAsync = this.util.promisify(jwt.verify);
-    JWT_SECRET = process.env.JWT_SECRET as string;
+    private JWT_SECRET = process.env.JWT_SECRET as string;
+
+    private verifyJwtAsync(token: string, secret: string): Promise<jwt.JwtPayload | string> {
+        return new Promise((resolve, reject) => {
+            jwt.verify(token, secret, (err, decoded) => {
+                if (err) return reject(err);
+                resolve(decoded as jwt.JwtPayload);
+            });
+        });
+    }
 
     verifyJwtToken = async (req: IRequest, res: Response, next: NextFunction): Promise<Response | void> => {
         let token;
@@ -22,9 +27,9 @@ export default class JwtHelper {
             return res.status(403).send(failAction('No token provided.', 403));
         else {
             try {
-                const decoded = await this.verifyJwtAsync(token, this.JWT_SECRET);
-                req._id = decoded._id;
-                req._email = decoded._email;
+                const decoded = await this.verifyJwtAsync(token, this.JWT_SECRET) as IRequest;
+                (req as IRequest)._id = String(decoded._id);
+                (req as IRequest)._email = String(decoded._email);
                 next();
             } catch (err) {
                 return res.status(500).send(failAction('Token authentication failed.', 500));
