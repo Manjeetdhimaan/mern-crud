@@ -3,7 +3,9 @@ const router = express.Router();
 
 import JwtHelper from "../middlewares/jwt-helper";
 import RoleController from "../controllers/role-controller";
-const verifyJwtToken = new JwtHelper().verifyJwtToken as any;
+import { TVerifyToken } from "./users.routes";
+
+const verifyJwtToken = new JwtHelper().verifyJwtToken as TVerifyToken;
 const roleCtrl = new RoleController();
 
 router.post('/create-role', verifyJwtToken, roleCtrl.createRole);

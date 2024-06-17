@@ -1,20 +1,22 @@
 import { RowDataPacket } from "mysql2";
 import { ITimeStamp } from "./common.types";
 
-export interface IUser extends RowDataPacket, ITimeStamp {
+declare interface IUser extends RowDataPacket, ITimeStamp {
   id: number;
   email: string;
   password: string;
   fullName: string;
 }
 
-export interface IUserWithoutPassword extends ITimeStamp {
+declare interface IUserWithoutPassword extends ITimeStamp {
   id: number;
   email: string;
   fullName: string;
   token: string;
 }
 
-export interface ICountRow {
+declare interface ICountRow {
   count: number;
 }
+
+export { IUser, IUserWithoutPassword, ICountRow }

@@ -1,8 +1,26 @@
 import { QueryResult } from 'mysql2';
 
 import db from '../config/db';
+import { ICountRow } from '../types/user.types';
 
 export default class UserService {
+
+    async isUserExist(emailOrUsername: string): Promise<boolean> {
+        return new Promise(async function (resolve, reject) {
+            try {
+                // const query = 'SELECT COUNT(*) as count FROM Users WHERE email = ? OR username = ?';
+                const query = 'SELECT COUNT(*) as count FROM Users WHERE email = ?';
+                const [rows] = await db.query<QueryResult>(
+                    query,
+                    [emailOrUsername]
+                );
+                const count = (rows as ICountRow[])[0].count;
+                return resolve(count > 0);
+            } catch (error) {
+                return reject(error);
+            }
+        });
+    }
 
     async getUsersWithRole<T>(userId?: number, getDeleted = false): Promise<QueryResult | Error> {
         return new Promise(async (resolve, reject) => {

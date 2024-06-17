@@ -11,7 +11,8 @@
     "include": [
         "src/**/*.ts",
         "**/*.ts",
-        "migrations/**/*.ts"
+        "migrations/**/*.js",
+        "migrations/sqls/**/*.sql"
     ],
     "exclude": [
         "node_modules"

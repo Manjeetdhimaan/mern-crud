@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
-import { AppError, ValidationError, ForeignKeyViolationError, DuplicateEntryError, NotNullError } from '../types/mysql-errors.types';
+import { AppError, ValidationError, ForeignKeyViolationError, DuplicateEntryError, NotNullError } from '../types/server-errors.types';
 import { failAction } from "../utils/response";
 
 function extractColumnNameFromErrorMessage(sqlMessage: string): string {
@@ -11,7 +11,7 @@ function extractColumnNameFromErrorMessage(sqlMessage: string): string {
 
 export const errorHandler = (err: AppError, _: Request, res: Response, next: NextFunction): Response => {
     // console.log("Server error ==> ", err);
-    console.log("Server error mess ==> ", err.message);
+    console.log("Server error message ==> ", err.message);
 
     if (typeof err === 'string') {
         return res.status(400).send(failAction(err));
@@ -21,7 +21,7 @@ export const errorHandler = (err: AppError, _: Request, res: Response, next: Nex
         return res.status(400).send(failAction("Password cannot be null or empty"));
     }
 
-    if (err.name === 'ValidationError') {
+    if (err.name === 'ValidationError') { // this works in mongodb: Not here
         const valErrors: string[] = [];
         Object.keys((err as ValidationError).errors).forEach(key => valErrors.push((err as ValidationError).errors[key].message));
         return res.status(422).send(failAction(valErrors.join(', ')));

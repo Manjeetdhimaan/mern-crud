@@ -1,32 +1,15 @@
 import { QueryResult } from 'mysql2';
 
 import db from '../config/db';
-import { ICountRow } from '../types/user.types';
 
 export default class DatabaseService {
-    async isUserExist(emailOrUsername: string): Promise<boolean> {
-        return new Promise(async function (resolve, reject) {
-            try {
-                // const query = 'SELECT COUNT(*) as count FROM Users WHERE email = ? OR username = ?';
-                const query = 'SELECT COUNT(*) as count FROM Users WHERE email = ?';
-                const [rows] = await db.query<QueryResult>(
-                    query,
-                    [emailOrUsername]
-                );
-                const count = (rows as ICountRow[])[0].count;
-                return resolve(count > 0);
-            } catch (error) {
-                return reject(error);
-            }
-        });
-    }
 
     async insertData<T>(data: { [key: string]: T }, table: string): Promise<QueryResult | Error> {
         return new Promise(async function (resolve, reject) {
             try {
                 //* Getting all the keys to insert as fields into table
                 if (!data || typeof data !== 'object') {
-                    throw new Error('Invalid data provided');
+                    return reject('Invalid data provided');
                 }
                 const keys = Object.keys(data).map((key) => {
                     if (!data[key] || data[key] === '' || (typeof data[key] === 'string' && (data[key] as string).trim() === '')) {
@@ -51,7 +34,7 @@ export default class DatabaseService {
 
     // common api service to get data dynamically from table.
     async getAll(table: string, fields = "*", page = 1, limit = 1000, getDeleted?: boolean): Promise<QueryResult | Error> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async function (resolve, reject) {
             try {
                 const offset = (page - 1) * limit;
                 let query = `SELECT ${fields} FROM ${table} LIMIT ${limit} OFFSET ${offset}`;
@@ -67,9 +50,9 @@ export default class DatabaseService {
         })
     }
 
-    // common api service to get single data dynamically from table.
+    // common api service to get single( or can be multiple ) data dynamically from table.
     async getData<T>(table: string, whereKey: string, whereValue: T, fields = "*", getDeleted?: boolean): Promise<QueryResult | Error> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async function (resolve, reject) {
             try {
                 const extractedValue = typeof whereValue === 'string' ? `'${whereValue}'` : whereValue;
                 let query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue}`;
@@ -84,27 +67,27 @@ export default class DatabaseService {
     }
 
     async softDelete<T>(table: string, whereKey: string, whereValue: T): Promise<QueryResult | Error> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async function (resolve, reject) {
             try {
                 const value = typeof whereValue === 'string' ? `${whereValue}` : whereValue;
                 const query = `UPDATE ${table} SET isDeleted = ${true} WHERE ${whereKey} = ${value}`;
                 const [result] = await db.query(query);
                 return resolve(result);
             } catch (error) {
-                return reject(error)
+                return reject(error);
             }
         });
     }
 
     async permanentDelete<T>(table: string, whereKey: string, whereValue: T): Promise<QueryResult | Error> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async function (resolve, reject) {
             try {
                 const value = typeof whereValue === 'string' ? `${whereValue}` : whereValue;
                 const query = `DELETE FROM ${table} WHERE ${whereKey} = ${value}`;
                 const [result] = await db.query(query);
                 return resolve(result);
             } catch (error) {
-                return reject(error)
+                return reject(error);
             }
         });
     }

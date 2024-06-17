@@ -1,15 +1,12 @@
 import { Request } from "express";
-
-export interface ITimeStamp {
+declare interface ITimeStamp {
     createAt: Date;
     updatedAt: Date;
 }
 
-export interface IRequest extends Request {
+declare interface IRequest extends Request {
     _id?: string;
     _email?: string;
-    role?: {
-        isAdmin: boolean;
-        isAgent: boolean;
-    }
 }
+
+export { ITimeStamp, IRequest }

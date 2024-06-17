@@ -18,15 +18,15 @@ export default class UserController {
     userSignup = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             const payload = req.body;
-            if (await this.databaseService.isUserExist(payload.email)) {
-                return res.status(422).json(failAction("Account with email exists already, Please try again with different one"));
+            if (await this.userService.isUserExist(payload.email)) {
+                return res.status(422).json(failAction("Account with this email exists already, Please try again with different one."));
             }
             if (!payload.password || !payload.password.trim()) {
                 return res.status(422).json(failAction("Password is required."));
             }
             payload.password = await bcrypt.hash(payload.password, 10);
             const data = await this.databaseService.insertData(payload, USERS);
-            return res.status(200).json(successAction(data, "Account created"));
+            return res.status(200).json(successAction(data, "Account created successfully!"));
 
         } catch (error) {
             return next(error);
@@ -77,7 +77,7 @@ export default class UserController {
         try {
             const id = req.query.id || req._id; //* if sending id through query, it will find user with that id otherwise it will return the logged in user through token
             const { getDeleted } = req.query;
-            const fields = 'id, fullName, email, createdAt, updatedAt, isDeleted, roleId'
+            const fields = 'id, fullName, email, createdAt, updatedAt, isDeleted, roleId';
             const data = await this.databaseService.getData(USERS, 'id', Number(id), fields, getDeleted === "true" ? true : false) as IUser[];
             if (data && data.length > 0) {
                 // const { password, ...rest } = data[0];
