@@ -11,4 +11,5 @@ const verifyJwtToken = new jwt_helper_1.default().verifyJwtToken;
 const roleCtrl = new role_controller_1.default();
 router.post('/create-role', verifyJwtToken, roleCtrl.createRole);
 router.get('/get-roles', verifyJwtToken, roleCtrl.getRoles);
+router.delete('/permanent-delete-role/:id', verifyJwtToken, roleCtrl.permanentDeleteRole);
 exports.default = router;

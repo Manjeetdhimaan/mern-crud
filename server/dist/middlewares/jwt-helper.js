@@ -7,7 +7,8 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const response_1 = require("../utils/response");
 class JwtHelper {
     constructor() {
-        this.JWT_SECRET = process.env.JWT_SECRET;
+        this.JWT_SECRET = String(process.env.JWT_SECRET);
+        // Bearer token
         this.verifyJwtToken = async (req, res, next) => {
             let token;
             if (req && req.headers && 'authorization' in req.headers && req.headers['authorization'])
@@ -19,6 +20,7 @@ class JwtHelper {
                     const decoded = await this.verifyJwtAsync(token, this.JWT_SECRET);
                     req._id = String(decoded._id);
                     req._email = String(decoded._email);
+                    req._userRole = decoded._userRole;
                     next();
                 }
                 catch (err) {
@@ -50,11 +52,12 @@ class JwtHelper {
             });
         });
     }
-    async generateJwt(_id, _email, isAdmin = false, remeberMe = false) {
+    async generateJwt(_id, _email, _userRole, isAdmin = false, remeberMe = false) {
         return jsonwebtoken_1.default.sign({
             _id,
             _email,
-            isAdmin
+            isAdmin,
+            _userRole
         }, this.JWT_SECRET, {
             expiresIn: remeberMe ? '365d' : process.env.JWT_EXP
         });

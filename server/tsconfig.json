@@ -12,7 +12,8 @@
         "src/**/*.ts",
         "**/*.ts",
         "migrations/**/*.js",
-        "migrations/sqls/**/*.sql"
+        "migrations/sqls/**/*.sql",
+        "src/types/global.d.ts"
     ],
     "exclude": [
         "node_modules"

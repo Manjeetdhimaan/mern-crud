@@ -10,7 +10,7 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const index_routes_1 = __importDefault(require("./routes/index.routes"));
 const error_handler_1 = require("./middlewares/error-handler");
 // Read file "readme.txt" to learn about migrations used in this project.
-exports.default = (function main() {
+exports.default = (function app() {
     const app = (0, express_1.default)();
     app.use(body_parser_1.default.json());
     app.use(body_parser_1.default.urlencoded({ extended: true }));

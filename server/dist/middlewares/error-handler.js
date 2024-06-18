@@ -16,7 +16,7 @@ const errorHandler = (err, _, res, next) => {
     if (err.message === 'Illegal arguments: object, number') {
         return res.status(400).send((0, response_1.failAction)("Password cannot be null or empty"));
     }
-    if (err.name === 'ValidationError') {
+    if (err.name === 'ValidationError') { // this works in mongodb: Not here
         const valErrors = [];
         Object.keys(err.errors).forEach(key => valErrors.push(err.errors[key].message));
         return res.status(422).send((0, response_1.failAction)(valErrors.join(', ')));

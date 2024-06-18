@@ -1,12 +1,10 @@
-import { RowDataPacket } from "mysql2";
-import { ITimeStamp } from "./common.types";
-
-declare interface IRole extends RowDataPacket, ITimeStamp {
+declare interface IRole {
     id: number;
     name: string;
     description: string;
     normalized: string;
-    grants: string;
+    grants: string[];
+    isSupport: boolean,
+    isAdmin: boolean
 }
-
 export { IRole }

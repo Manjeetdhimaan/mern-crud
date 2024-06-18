@@ -4,6 +4,6 @@ export function successAction<T>(data: T, message = "OK", success = true) {
     return { statusCode: status.SUCCESS, message, success, data };
 }
 
-export function failAction(message: string = 'Server error', statusCode: number = status.FAILURE) {
+export function failAction(message = 'Server error', statusCode: number = status.FAILURE) {
     return { statusCode, message, success: false };
 }

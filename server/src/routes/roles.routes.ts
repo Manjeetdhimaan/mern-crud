@@ -10,5 +10,6 @@ const roleCtrl = new RoleController();
 
 router.post('/create-role', verifyJwtToken, roleCtrl.createRole);
 router.get('/get-roles', verifyJwtToken, roleCtrl.getRoles);
+router.delete('/permanent-delete-role/:id', verifyJwtToken, roleCtrl.permanentDeleteRole);
 
 export default router;

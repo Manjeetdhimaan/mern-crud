@@ -22,7 +22,7 @@ export default class UserService {
         });
     }
 
-    async getUsersWithRole<T>(userId?: number, getDeleted = false): Promise<QueryResult | Error> {
+    async getUsersWithRole<T>(userId?: number, userEmail?: string, getDeleted = false): Promise<QueryResult | Error> {
         return new Promise(async (resolve, reject) => {
             try {
                 // to get multiple 
@@ -34,7 +34,7 @@ export default class UserService {
                 Roles.grants AS roleGrants 
                 FROM Users JOIN Roles ON Users.roleId = Roles.id WHERE isDeleted = ${getDeleted}
             `;
-                if (userId) { // to get single user
+                if (userId && !userEmail) { // to get single user
                     query = `SELECT Users.id, Users.fullName, Users.email, Users.createdAt, Users.updatedAt, Users.isDeleted, Users.roleId, 
                 Roles.id AS roleId, 
                 Roles.name AS roleName, 
@@ -42,6 +42,16 @@ export default class UserService {
                 Roles.description AS roleDescription, 
                 Roles.grants AS roleGrants 
                 FROM Users JOIN Roles ON Users.roleId = Roles.id WHERE Users.id = ${userId} AND isDeleted = ${getDeleted}
+            `;
+                }
+                if (userEmail && !userId) { // to get single user
+                    query = `SELECT Users.id, Users.fullName, Users.email, Users.password, Users.createdAt, Users.updatedAt, Users.isDeleted, Users.roleId, 
+                Roles.id AS roleId, 
+                Roles.name AS roleName, 
+                Roles.normalized AS roleNormalized, 
+                Roles.description AS roleDescription, 
+                Roles.grants AS roleGrants 
+                FROM Users JOIN Roles ON Users.roleId = Roles.id WHERE Users.email = '${userEmail}' AND isDeleted = ${getDeleted}
             `;
                 }
                 const [result] = await db.query<QueryResult>(query);

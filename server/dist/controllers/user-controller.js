@@ -14,18 +14,44 @@ class UserController {
         this.databaseService = new db_service_1.default();
         this.userService = new user_service_1.default();
         this.jwtHelper = new jwt_helper_1.default();
+        this.getUpdatedUserWithRole = (user) => {
+            const userWithRole = {
+                id: user.id,
+                fullName: user.fullName,
+                email: user.email,
+                password: user.password,
+                isDeleted: user.isDeleted,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+                role: {
+                    id: Number(user.roleId),
+                    name: String(user.roleName),
+                    normalized: String(user.roleNormalized),
+                    description: String(user.roleDescription),
+                    grants: user.roleGrants || [],
+                    isSupport: false,
+                    isAdmin: false,
+                },
+                token: ""
+            };
+            const isAdmin = userWithRole.role.grants.includes('admin:*');
+            const isSupport = userWithRole.role.grants.includes('support:*');
+            userWithRole.role.isAdmin = isAdmin;
+            userWithRole.role.isSupport = isSupport;
+            return userWithRole;
+        };
         this.userSignup = async (req, res, next) => {
             try {
                 const payload = req.body;
-                if (await this.databaseService.isUserExist(payload.email)) {
-                    return res.status(422).json((0, response_1.failAction)("Account with email exists already, Please try again with different one"));
+                if (await this.userService.isUserExist(payload.email)) {
+                    return res.status(422).json((0, response_1.failAction)("Account with this email exists already, Please try again with different one."));
                 }
                 if (!payload.password || !payload.password.trim()) {
                     return res.status(422).json((0, response_1.failAction)("Password is required."));
                 }
                 payload.password = await bcryptjs_1.default.hash(payload.password, 10);
                 const data = await this.databaseService.insertData(payload, database_tables_1.USERS);
-                return res.status(200).json((0, response_1.successAction)(data, "Account created"));
+                return res.status(200).json((0, response_1.successAction)(data, "Account created successfully!"));
             }
             catch (error) {
                 return next(error);
@@ -34,12 +60,15 @@ class UserController {
         this.userLogin = async (req, res, next) => {
             try {
                 const { email, password } = req.body;
-                const data = await this.databaseService.getData(database_tables_1.USERS, "email", email);
+                const { getDeleted } = req.query;
+                // const data = await this.databaseService.getData(USERS, "email", email) as IUser[];
+                const data = await this.userService.getUsersWithRole(undefined, email, getDeleted === "true" ? true : false);
                 if (data && data.length > 0) {
                     const user = data[0];
                     if (user && await bcryptjs_1.default.compare(password, user.password)) {
-                        user.token = await this.jwtHelper.generateJwt(user.id, user.email);
-                        const { password, ...userWithoutPassword } = user;
+                        const userWithRole = this.getUpdatedUserWithRole(user);
+                        userWithRole.token = await this.jwtHelper.generateJwt(userWithRole.id, userWithRole.email, userWithRole.role);
+                        const { password, ...userWithoutPassword } = userWithRole;
                         return res.status(200).json((0, response_1.successAction)(userWithoutPassword, "User fetched successfully"));
                     }
                 }
@@ -50,7 +79,7 @@ class UserController {
                 return next(error);
             }
         };
-        // Not in use for now
+        //! Not in use for now
         this.getUsers = async (req, res, next) => {
             try {
                 const { page, perPage, getDeleted } = req.query;
@@ -69,7 +98,7 @@ class UserController {
                 return next(error);
             }
         };
-        // Not in use for now
+        //! Not in use for now
         this.getUser = async (req, res, next) => {
             try {
                 const id = req.query.id || req._id; //* if sending id through query, it will find user with that id otherwise it will return the logged in user through token
@@ -92,33 +121,13 @@ class UserController {
                 const id = req.query.id || req._id; //* if sending id through query, it will find user with that id otherwise it will return the logged in user through token
                 const { getDeleted } = req.query;
                 // const fields = 'id, fullName, email, createdAt, updatedAt, isDeleted, roleId'
-                const data = await this.userService.getUsersWithRole(Number(id), getDeleted === "true" ? true : false);
+                const data = await this.userService.getUsersWithRole(Number(id), undefined, getDeleted === "true" ? true : false);
                 if (data && data.length > 0) {
                     // const { password, ...rest } = data[0];
                     const user = data[0];
-                    const userWithRole = {
-                        id: user.userId,
-                        fullName: user.fullName,
-                        email: user.email,
-                        password: user.password,
-                        isDeleted: user.isDeleted,
-                        createdAt: user.createdAt,
-                        updatedAt: user.updatedAt,
-                        role: {
-                            id: user.roleId,
-                            name: user.roleName,
-                            normalized: user.roleNormalized,
-                            description: user.roleDescription,
-                            grants: user.roleGrants,
-                            isSupport: false,
-                            isAdmin: false
-                        }
-                    };
-                    const isAdmin = userWithRole.role.grants.includes('admin:*');
-                    const isSupport = userWithRole.role.grants.includes('support:*');
-                    userWithRole.role.isAdmin = isAdmin;
-                    userWithRole.role.isSupport = isSupport;
-                    return res.status(200).json((0, response_1.successAction)({ user: userWithRole }, "User fetched successfully!"));
+                    const userWithRole = this.getUpdatedUserWithRole(user);
+                    const { password, ...userWithoutPassword } = userWithRole;
+                    return res.status(200).json((0, response_1.successAction)({ user: userWithoutPassword }, "User fetched successfully!"));
                 }
                 return res.status(200).json((0, response_1.successAction)(null, "No user found"));
             }
@@ -129,36 +138,15 @@ class UserController {
         };
         this.getUsersWithRole = async (req, res, next) => {
             try {
-                const id = req.query.id || req._id; //* if sending id through query, it will find user with that id otherwise it will return the logged in user through token
                 const { getDeleted } = req.query;
                 // const fields = 'id, fullName, email, createdAt, updatedAt, isDeleted, roleId'
-                const data = await this.userService.getUsersWithRole(undefined, getDeleted === "true" ? true : false);
+                const data = await this.userService.getUsersWithRole(undefined, undefined, getDeleted === "true" ? true : false);
                 if (data && data.length > 0) {
                     // const { password, ...rest } = data[0];
                     const users = data.map(user => {
-                        const userWithRole = {
-                            id: user.userId,
-                            fullName: user.fullName,
-                            email: user.email,
-                            password: user.password,
-                            isDeleted: user.isDeleted,
-                            createdAt: user.createdAt,
-                            updatedAt: user.updatedAt,
-                            role: {
-                                id: user.roleId,
-                                name: user.roleName,
-                                normalized: user.roleNormalized,
-                                description: user.roleDescription,
-                                grants: user.roleGrants,
-                                isSupport: false,
-                                isAdmin: false
-                            }
-                        };
-                        const isAdmin = userWithRole.role.grants.includes('admin:*');
-                        const isSupport = userWithRole.role.grants.includes('support:*');
-                        userWithRole.role.isAdmin = isAdmin;
-                        userWithRole.role.isSupport = isSupport;
-                        return userWithRole;
+                        const userWithRole = this.getUpdatedUserWithRole(user);
+                        const { password, ...userWithoutPassword } = userWithRole;
+                        return userWithoutPassword;
                     });
                     return res.status(200).json((0, response_1.successAction)({ user: users }, "User fetched successfully!"));
                 }
@@ -190,7 +178,7 @@ class UserController {
                 const { id } = req.params;
                 const data = await this.databaseService.permanentDelete(database_tables_1.USERS, "id", Number(id));
                 if (data) {
-                    if (data && data.affectedRows > 0) {
+                    if (data.affectedRows > 0) {
                         return res.status(200).json((0, response_1.successAction)(null, "User deleted permanently"));
                     }
                 }
