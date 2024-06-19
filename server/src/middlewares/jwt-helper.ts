@@ -43,7 +43,7 @@ export default class JwtHelper {
             isAdmin,
             _userRole
         }, this.JWT_SECRET, {
-            expiresIn: remeberMe ? '365d' : process.env.JWT_EXP
+            expiresIn: remeberMe ? '365d' : process.env.JWT_EXP || '1d'
         });
     }
 

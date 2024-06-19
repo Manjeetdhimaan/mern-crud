@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+
 import app from './app';
 import db from './config/db';
 import RoleController from "./controllers/role-controller";
@@ -23,23 +24,18 @@ const mockNext: NextFunction = <T>(err?: T) => {
     }
 };
 
-(function server() {
-    const port = process.env['SERVER_PORT'] || 4002;
+(function server(port: number) {
     const roleCtrl = new RoleController();
     app.listen(port, async () => {
         try {
             console.log(`Node server running on port ${port}`);
             await db.getConnection();
-            // const query = `
-            // DESCRIBE Users`;
-            // const res = await db.query(query);
-            // console.log(res);
             console.log('Resigtering permissions...')
             await roleCtrl.registerRoles(mockReq, mockRes, mockNext);
             console.log('Database connection succeeded');
 
         } catch (error) {
-            console.log('Error connecting to mysql database', error);
+            console.log('Error connecting to mysql database =>', error);
         }
     });
-})();
+})(Number(process.env['SERVER_PORT'] || 4002));
