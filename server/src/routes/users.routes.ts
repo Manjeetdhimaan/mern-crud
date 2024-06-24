@@ -1,6 +1,6 @@
 import express, { NextFunction, Response } from "express";
 
-import UserController from "../controllers/user-controller";
+import UserController from "../controllers/user.controller";
 import JwtHelper from "../middlewares/jwt-helper";
 import { IRequest } from "../types/common.types";
 import { canUser } from "../middlewares/permissions";

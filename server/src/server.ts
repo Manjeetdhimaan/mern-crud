@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import app from './app';
 import db from './config/db';
-import RoleController from "./controllers/role-controller";
+import RoleController from "./controllers/role.controller";
 
 const mockReq = {
     query: { page: '1', perPage: '100' }

@@ -24,23 +24,18 @@ const mockNext = (err) => {
         console.log('Permissions registered successfully');
     }
 };
-(function server() {
-    const port = process.env['SERVER_PORT'] || 4002;
+(function server(port) {
     const roleCtrl = new role_controller_1.default();
     app_1.default.listen(port, async () => {
         try {
             console.log(`Node server running on port ${port}`);
             await db_1.default.getConnection();
-            // const query = `
-            // DESCRIBE Users`;
-            // const res = await db.query(query);
-            // console.log(res);
             console.log('Resigtering permissions...');
             await roleCtrl.registerRoles(mockReq, mockRes, mockNext);
             console.log('Database connection succeeded');
         }
         catch (error) {
-            console.log('Error connecting to mysql database', error);
+            console.log('Error connecting to mysql database =>', error);
         }
     });
-})();
+})(Number(process.env['SERVER_PORT'] || 4002));

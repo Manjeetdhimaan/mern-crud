@@ -13,7 +13,8 @@
         "**/*.ts",
         "migrations/**/*.js",
         "migrations/sqls/**/*.sql",
-        "src/types/global.d.ts"
+        "src/types/global.d.ts",
+        "src/www"
     ],
     "exclude": [
         "node_modules"

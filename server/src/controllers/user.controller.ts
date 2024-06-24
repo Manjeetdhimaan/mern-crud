@@ -2,8 +2,8 @@ import bcrypt from "bcryptjs";
 import { Request, Response, NextFunction } from "express";
 import { ResultSetHeader } from "mysql2";
 
-import DatabaseService from "../services/db-service";
-import UserService from "../services/user-service";
+import DatabaseService from "../services/db.service";
+import UserService from "../services/user.service";
 import JwtHelper from "../middlewares/jwt-helper";
 import { failAction, successAction } from "../utils/response";
 import { IRequest } from "../types/common.types";

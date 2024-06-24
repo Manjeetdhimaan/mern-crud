@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
-import DatabaseService from "../services/db-service";
+import DatabaseService from "../services/db.service";
 import { ROLES } from "../utils/database-tables";
 import { successAction } from "../utils/response";
 import { IRole } from "../types/role.types";

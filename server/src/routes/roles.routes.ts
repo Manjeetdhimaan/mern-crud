@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 
 import JwtHelper from "../middlewares/jwt-helper";
-import RoleController from "../controllers/role-controller";
+import RoleController from "../controllers/role.controller";
 import { TVerifyToken } from "./users.routes";
 
 const verifyJwtToken = new JwtHelper().verifyJwtToken as TVerifyToken;

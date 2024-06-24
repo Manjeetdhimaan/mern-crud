@@ -14,10 +14,6 @@ const canUser = (actionData) => {
         const action = splitActionData[0];
         const actionType = splitActionData[1];
         const foundAction = userRole.grants.find(grant => grant.split(':')[0] === action);
-        // console.log("role", userRole);
-        // console.log("action", action);
-        // console.log("actionType", actionType);
-        // console.log("foundAction", foundAction);
         let foundActionType;
         if (foundAction) {
             foundActionType = foundAction.split(':');

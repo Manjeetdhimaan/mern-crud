@@ -24,7 +24,7 @@ class JwtHelper {
                     next();
                 }
                 catch (err) {
-                    return res.status(500).send((0, response_1.failAction)('Token authentication failed.', 500));
+                    return res.status(401).send((0, response_1.failAction)('Token authentication failed.', 401));
                 }
             }
         };
@@ -59,7 +59,7 @@ class JwtHelper {
             isAdmin,
             _userRole
         }, this.JWT_SECRET, {
-            expiresIn: remeberMe ? '365d' : process.env.JWT_EXP
+            expiresIn: remeberMe ? '365d' : process.env.JWT_EXP || '1d'
         });
     }
 }

@@ -66,7 +66,7 @@ class RoleController extends db_service_1.default {
         };
         this.permanentDeleteRole = async (req, res, next) => {
             try {
-                // const fields = '*';              
+                // const fields = '*';
                 const data = await this.permanentDelete(database_tables_1.ROLES, "id", req.params.id);
                 if (!data || !data.affectedRows)
                     return res.status(200).json((0, response_1.successAction)(null, "No roles found!"));

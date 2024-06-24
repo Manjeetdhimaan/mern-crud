@@ -1,5 +1,6 @@
 import dotenv from "dotenv"; dotenv.config();
 import express, { NextFunction, Request, Response } from "express";
+import path from "path";
 import bodyParser from "body-parser";
 
 import routes from './routes/index.routes';
@@ -35,6 +36,12 @@ export default (function app() {
     app.use(express.json());
     app.use("/api/v1", routes);
     app.use(errorHandler);
+
+    app.use(express.static(path.join(__dirname, 'www')));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'www/index.html'));
+    });
     return app;
 })();
 
