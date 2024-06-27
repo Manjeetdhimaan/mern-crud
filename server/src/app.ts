@@ -19,7 +19,7 @@ export default (function app() {
             "http://localhost:5173",
             "https://yourdomain.com",
         ];
-        const origin = req.headers.origin as string;
+        const origin = String(req.headers.origin);
         if (allowedOrigins.includes(origin)) {
             res.setHeader("Access-Control-Allow-Origin", origin);
         }

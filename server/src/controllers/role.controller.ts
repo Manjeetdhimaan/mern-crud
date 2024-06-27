@@ -15,11 +15,11 @@ export default class RoleController extends DatabaseService {
     }
 
     createRole = async (req: Request, res: Response, next: NextFunction) => {
-        const payload = req.body;
-        const normalized = payload.name.trim().toLowerCase().split(' ').join('-');
-        payload.normalized = normalized;
-        payload.grants = JSON.stringify(payload.grants);
         try {
+            const payload = req.body;
+            const normalized = payload.name.trim().toLowerCase().split(' ').join('-');
+            payload.normalized = normalized;
+            payload.grants = JSON.stringify(payload.grants);
             const data = await this.insertData(payload, ROLES);
             await this.registerRoles(req, res, next);
             return res.status(200).json(successAction(data, "Role created successfully!"));
