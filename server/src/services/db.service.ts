@@ -16,14 +16,15 @@ export default class DatabaseService {
                         return null;
                     }
                     return key;
-                }).join(', ');
+                });
 
                 //* Getting all the values to insert as values into table
                 const values = Object.values(data).map(value => typeof value === 'string' ? `'${value}'` : value).join(', ');
-
-                const query = `INSERT INTO ${table} (${keys}) VALUES (${values})`;
+                const placeholders = keys.map((_, index) => `$${index + 1}`).join(', ');
+                const query = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`;
                 const [result] = await db.query<QueryResult>(
-                    query
+                    query,
+                    values
                 );
                 return resolve(result);
             } catch (error) {
