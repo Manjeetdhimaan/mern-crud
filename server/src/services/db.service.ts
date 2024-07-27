@@ -3,7 +3,7 @@ import { QueryResult } from 'mysql2';
 import db from '../config/db';
 
 export default class DatabaseService {
-
+    // SQL injection risk in this function
     async insertData<T>(data: { [key: string]: T }, table: string): Promise<QueryResult | Error> {
         return new Promise(async function (resolve, reject) {
             try {
@@ -32,6 +32,36 @@ export default class DatabaseService {
             }
         });
     }
+
+    // Minimum SQL injection risk with improved logic
+     // async insertData<T>(data: { [key: string]: T }, table: string): Promise<QueryResult | Error> {
+    //     return new Promise(async function (resolve, reject) {
+    //         try {
+    //             //* Getting all the keys to insert as fields into table
+    //             if (!data || typeof data !== 'object') {
+    //                 return reject('Invalid data provided');
+    //             }
+    //             const keys = Object.keys(data).map((key) => {
+    //                 if (!data[key] || data[key] === '' || (typeof data[key] === 'string' && (data[key] as string).trim() === '')) {
+    //                     return null;
+    //                 }
+    //                 return key;
+    //             });
+
+    //             //* Getting all the values to insert as values into table
+    //             const values = Object.values(data).map(value => typeof value === 'string' ? `'${value}'` : value).join(', ');
+    //             const placeholders = keys.map((_, index) => `$${index + 1}`).join(', ');
+    //             const query = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`;
+    //             const [result] = await db.query<QueryResult>(
+    //                 query,
+    //                 values
+    //             );
+    //             return resolve(result);
+    //         } catch (error) {
+    //             return reject(error);
+    //         }
+    //     });
+    // }
 
     // common api service to get data dynamically from table.
     async getAll(table: string, fields = "*", page = 1, limit = 1000, getDeleted?: boolean): Promise<QueryResult | Error> {
