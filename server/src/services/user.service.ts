@@ -5,7 +5,7 @@ import { ICountRow } from '../types/user.types';
 
 export default class UserService {
 
-    async isUserExist(emailOrUsername: string): Promise<boolean> {
+    async doesUserExist(emailOrUsername: string): Promise<boolean> {
         return new Promise(async function (resolve, reject) {
             try {
                 // const query = 'SELECT COUNT(*) as count FROM Users WHERE email = ? OR username = ?';

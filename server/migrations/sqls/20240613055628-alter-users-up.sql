@@ -1,4 +1,0 @@
-ALTER TABLE
-    Users
-ADD
-    FOREIGN KEY (roleId) REFERENCES Roles(id) ON DELETE CASCADE

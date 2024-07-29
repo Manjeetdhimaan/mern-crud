@@ -1,5 +1,11 @@
 export interface IUser {
-    id: string,
+    id: number | string,
+    recieverId: number,
     name: string,
-    imgUrl: string
+    imgUrl: string,
+    fullName: string,
+    createdAt: string,
+    updatedAt: string,
+    email: string,
+    isCoversation: boolean
 }

@@ -36,7 +36,7 @@ export default class JwtHelper {
         }
     }
 
-    async generateJwt(_id: number, _email: string, _userRole: IRole, isAdmin = false, remeberMe = false): Promise<string> {
+    async generateJwt(_id: number, _email: string, _userRole?: IRole, isAdmin = false, remeberMe = false): Promise<string> {
         return jwt.sign({
             _id,
             _email,

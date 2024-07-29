@@ -47,7 +47,7 @@ export default class UserController {
     userSignup = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             const payload = req.body;
-            if (await this.userService.isUserExist(payload.email)) {
+            if (await this.userService.doesUserExist(payload.email)) {
                 return res.status(422).json(failAction("Account with this email exists already, Please try again with different one."));
             }
             if (!payload.password || !payload.password.trim()) {
@@ -65,15 +65,16 @@ export default class UserController {
     userLogin = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             const { email, password } = req.body;
-            const { getDeleted } = req.query;
+            // const { getDeleted } = req.query;
             // const data = await this.databaseService.getData(USERS, "email", email) as IUser[];
-            const data = await this.userService.getUsersWithRole(undefined, email, getDeleted === "true" ? true : false) as IUser[];
+            // const data = await this.userService.getUsersWithRole(undefined, email, getDeleted === "true" ? true : false) as IUser[];
+            const data = await this.databaseService.getData(USERS, 'email', email) as IUser[];
             if (data && data.length > 0) {
                 const user = data[0];
                 if (user && await bcrypt.compare(password, user.password)) {
-                    const userWithRole = this.getUpdatedUserWithRole(user);
-                    userWithRole.token = await this.jwtHelper.generateJwt(userWithRole.id, userWithRole.email, userWithRole.role as IRole);
-                    const { password, ...userWithoutPassword } = userWithRole;
+                    // const userWithRole = this.getUpdatedUserWithRole(user);
+                    user.token = await this.jwtHelper.generateJwt(user.id, user.email);
+                    const { password, ...userWithoutPassword } = user;
                     return res.status(200).json(successAction(userWithoutPassword, "User fetched successfully"));
                 }
             }
@@ -89,7 +90,7 @@ export default class UserController {
     getUsers = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             const { page, perPage, getDeleted } = req.query;
-            const fields = 'id, fullName, email, createdAt, updatedAt, isDeleted roleId'
+            const fields = 'id, fullName, email, createdAt, updatedAt, isDeleted'
             // const fields = '*'
             const data = await this.databaseService.getAll(USERS, fields, (Number(page) || 1), (Number(perPage) || 10), getDeleted === "true" ? true : false) as IUser[];
             // const modifiedData = (data as { [key: string]: string }[]).map((ob) => {
