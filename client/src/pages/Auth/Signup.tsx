@@ -11,11 +11,11 @@ function Signup() {
     const data: any = useActionData();
     const navigation = useNavigation();
     const isSubmitting = navigation.state === 'submitting';
-    const inputClasses = 'border-b-2 border-y-cyan-950 outline-none my-4';
+    const inputClasses = 'border-b-2 border-y-cyan-950 outline-none my-4 w-[100%]';
 
     return (
         <section className='flex justify-center h-screen items-center'>
-            <Form method="post">
+            <Form method="post" className='w-[30%]'>
                 <h2 className='text-4xl mb-8'>Sign up</h2>
                 {data && data.message && <p className='text-red-600'>{data.message}</p>}
                 <p>
@@ -27,7 +27,7 @@ function Signup() {
                 <p>
                     <input className={inputClasses} placeholder='Password' id="password" type="password" name="password" required />
                 </p>
-                <div >
+                <div className='flex items-center justify-between'>
 
                     <button className='' disabled={isSubmitting}>
                         {isSubmitting ? 'Signing up...' : 'Sign up'}

@@ -1,9 +1,10 @@
 import { useNavigate, useParams } from "react-router-dom";
 
-import { baseAPIUrl, token, userId } from "../../constants/local.constants";
+import http from "../../util/http";
+import { getUserId } from "../../util/auth";
 import { IUser } from "../../models/user.model";
-const messageBaseUrl = baseAPIUrl + '/messages';
 
+const messageBaseUrl = '/messages';
 let conversationId = '';
 
 const User: React.FC<IUser> = ({ fullName, id, isCoversation }) => {
@@ -12,26 +13,14 @@ const User: React.FC<IUser> = ({ fullName, id, isCoversation }) => {
 
     const startCoversation = async (recieverId: number) => {
         try {
-            const senderId = localStorage.getItem(userId);
+            const senderId = getUserId();
             const payload = {
                 title: 'Sender=' + senderId + ': reciever=' + recieverId,
                 startedBy: Number(senderId),
                 recievedBy: recieverId
             }
-            const response = await fetch(`${messageBaseUrl}/start`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem(token)}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-            if (!response.ok) {
-                console.log('Error while starting conversation');
-            }
-
-            const result = await response.json();
-            console.log(result); // TO DO: navigate to /messages/:conversationID 
+            const response = await http.post(`${messageBaseUrl}/start`, payload);
+            console.log(response); // TO DO: navigate to /messages/:conversationID 
         } catch (error) {
             console.log(error);
             // Inform user about the error

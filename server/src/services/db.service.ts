@@ -35,7 +35,7 @@ export default class DatabaseService {
     }
 
     // Minimum SQL injection risk with improved logic
-     // async insertData<T>(data: { [key: string]: T }, table: string): Promise<QueryResult | Error> {
+    // async insertData<T>(data: { [key: string]: T }, table: string): Promise<QueryResult | Error> {
     //     return new Promise(async function (resolve, reject) {
     //         try {
     //             //* Getting all the keys to insert as fields into table
@@ -65,13 +65,13 @@ export default class DatabaseService {
     // }
 
     // common api service to get data dynamically from table.
-    async getAll(table: string, fields = "*", page = 1, limit = 1000, getDeleted?: boolean): Promise<QueryResult | Error> {
+    async getAll(table: string, fields = "*", page = 1, limit = 1000, sort = 'ASC', getDeleted?: boolean): Promise<QueryResult | Error> {
         return new Promise(async function (resolve, reject) {
             try {
                 const offset = (page - 1) * limit;
-                let query = `SELECT ${fields} FROM ${table} LIMIT ${limit} OFFSET ${offset}`;
-                if (getDeleted === false) query = `SELECT ${fields} FROM ${table} WHERE isDeleted = ${false} LIMIT ${limit} OFFSET ${offset}`;
-                if (getDeleted) query = `SELECT ${fields} FROM ${table} WHERE isDeleted = ${true} LIMIT ${limit} OFFSET ${offset}`;
+                let query = `SELECT ${fields} FROM ${table} ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
+                if (getDeleted === false) query = `SELECT ${fields} FROM ${table} WHERE isDeleted = ${false} ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
+                if (getDeleted) query = `SELECT ${fields} FROM ${table} WHERE isDeleted = ${true} ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
                 const [result] = await db.query<QueryResult>(
                     query
                 );
@@ -83,13 +83,14 @@ export default class DatabaseService {
     }
 
     // common api service to get single( or can be multiple ) data dynamically from table.
-    async getData<T>(table: string, whereKey: string, whereValue: T, fields = "*", getDeleted?: boolean): Promise<QueryResult | Error> {
+    async getData<T>(table: string, whereKey: string, whereValue: T, fields = "*", page = 1, limit = 1000, sort = 'ASC', getDeleted?: boolean): Promise<QueryResult | Error> {
         return new Promise(async function (resolve, reject) {
             try {
                 const extractedValue = typeof whereValue === 'string' ? `'${whereValue}'` : whereValue;
-                let query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue}`;
-                if (getDeleted === false) query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} AND isDeleted = ${false}`;
-                if (getDeleted === true) query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} AND isDeleted = ${true}`;
+                const offset = (page - 1) * limit;
+                let query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
+                if (getDeleted === false) query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} AND isDeleted = ${false} ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
+                if (getDeleted === true) query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} AND isDeleted = ${true} ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
                 const [result] = await db.query<QueryResult>(query);
                 return resolve(result);
             } catch (error) {
@@ -98,22 +99,38 @@ export default class DatabaseService {
         });
     }
 
-        // common api service to get single( or can be multiple ) data dynamically from table.
-        async getDataWithOrWhere<T>(table: string, whereKey: string, whereValue: T, orWhereKey: string, orWhereValue: T, fields = "*", getDeleted?: boolean): Promise<QueryResult | Error> {
-            return new Promise(async function (resolve, reject) {
-                try {
-                    const extractedValue = typeof whereValue === 'string' ? `'${whereValue}'` : whereValue;
-                    // const extractedORValue = typeof orWhereValue === 'string' ? `'${orWhereValue}'` : orWhereValue;
-                    let query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue}`;
-                    if (getDeleted === false) query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue} AND isDeleted = ${false}`;
-                    if (getDeleted === true) query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue} AND isDeleted = ${true}`;
-                    const [result] = await db.query<QueryResult>(query);
-                    return resolve(result);
-                } catch (error) {
-                    return reject(error);
-                }
-            });
-        }
+    async getCount<T>(table: string, whereKey: string, whereValue: T, getDeleted?: boolean): Promise<number | Error> {
+        return new Promise(async function (resolve, reject) {
+            try {
+                const extractedValue = typeof whereValue === 'string' ? `'${whereValue}'` : whereValue;
+                let query = `SELECT COUNT(*) AS totalCount FROM ${table} WHERE ${whereKey} = ${extractedValue}`;
+                if (getDeleted === false) query = `SELECT COUNT(*) AS totalCount FROM ${table} WHERE ${whereKey} = ${extractedValue} AND isDeleted = ${false}`;
+                if (getDeleted === true) query = `SELECT COUNT(*) AS totalCount FROM ${table} WHERE ${whereKey} = ${extractedValue} AND isDeleted = ${true}`;
+                const [rows] = await db.query(query) as any[];
+                const totalCount = (rows[0] as { totalCount: number }).totalCount;
+                return resolve(totalCount);
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
+
+    // common api service to get single( or can be multiple ) data dynamically from table.
+    async getDataWithOrWhere<T>(table: string, whereKey: string, whereValue: T, orWhereKey: string, orWhereValue: T, fields = "*", getDeleted?: boolean): Promise<QueryResult | Error> {
+        return new Promise(async function (resolve, reject) {
+            try {
+                const extractedValue = typeof whereValue === 'string' ? `'${whereValue}'` : whereValue;
+                // const extractedORValue = typeof orWhereValue === 'string' ? `'${orWhereValue}'` : orWhereValue;
+                let query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue}`;
+                if (getDeleted === false) query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue} AND isDeleted = ${false}`;
+                if (getDeleted === true) query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue} AND isDeleted = ${true}`;
+                const [result] = await db.query<QueryResult>(query);
+                return resolve(result);
+            } catch (error) {
+                return reject(error);
+            }
+        });
+    }
 
     async softDelete<T>(table: string, whereKey: string, whereValue: T): Promise<QueryResult | Error> {
         return new Promise(async function (resolve, reject) {

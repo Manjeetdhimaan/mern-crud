@@ -1,14 +1,13 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
-
 import './App.css';
+import Login from './pages/Auth/Login';
+import Signup from './pages/Auth/Signup';
 import Layout from './components/Layout/Layout';
-import { idLoader, tokenLoader } from './util/auth';
+import { getUserId, tokenLoader } from './util/auth';
 import { Messages } from './pages/Messages/Messages';
-import Login, { action as authAction } from './pages/Auth/Login';
 import { action as logoutAction } from './pages/Logout/Logout';
 import { action as signUpAction } from './pages/Auth/Signup';
-import Signup from './pages/Auth/Signup';
 
 const router = createBrowserRouter([
   {
@@ -22,7 +21,7 @@ const router = createBrowserRouter([
       {
         path: 'messages',
         element: <Messages />,
-        loader: idLoader,
+        loader: getUserId,
         children: [
           {
             path: ':conversationId',
@@ -39,8 +38,7 @@ const router = createBrowserRouter([
   },
   {
     path: 'login',
-    element: <Login />,
-    action: authAction,
+    element: <Login />
   },
   {
     path: 'sign-up',
@@ -57,4 +55,13 @@ function App() {
   )
 }
 
-export default App
+export default App;
+
+// TO DO: 
+// 1. Keep same payload in frontend and backend according to database in emit and on message service. -DONE
+// 2. Update database tables with correct spellings of values inside them.
+// 3. Create a common http service and use it throughout the app. - DONE
+// 4. Improve login and signup page.
+// 5. Create localStorage service - DONE
+// 6. Replace fetch function with axios in signup
+// 7. Implement pagination on Get Messages

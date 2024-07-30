@@ -92,7 +92,7 @@ export default class UserController {
             const { page, perPage, getDeleted } = req.query;
             const fields = 'id, fullName, email, createdAt, updatedAt, isDeleted'
             // const fields = '*'
-            const data = await this.databaseService.getAll(USERS, fields, (Number(page) || 1), (Number(perPage) || 10), getDeleted === "true" ? true : false) as IUser[];
+            const data = await this.databaseService.getAll(USERS, fields, (Number(page) || 1), (Number(perPage) || 10), undefined, getDeleted === "true" ? true : false) as IUser[];
             // const modifiedData = (data as { [key: string]: string }[]).map((ob) => {
             //     const { password, ...rest } = ob;
             //     return rest;
@@ -110,7 +110,7 @@ export default class UserController {
             const id = req.query.id || req._id; //* if sending id through query, it will find user with that id otherwise it will return the logged in user through token
             const { getDeleted } = req.query;
             const fields = 'id, fullName, email, createdAt, updatedAt, isDeleted, roleId';
-            const data = await this.databaseService.getData(USERS, 'id', Number(id), fields, getDeleted === "true" ? true : false) as IUser[];
+            const data = await this.databaseService.getData(USERS, 'id', Number(id), fields, undefined, undefined, undefined, getDeleted === "true" ? true : false) as IUser[];
             if (data && data.length > 0) {
                 // const { password, ...rest } = data[0];
                 return res.status(200).json(successAction({ user: data[0] }, "User fetched successfully!"));

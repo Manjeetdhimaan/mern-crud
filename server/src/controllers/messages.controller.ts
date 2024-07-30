@@ -35,9 +35,9 @@ export default class UserController {
         try {
             const { senderId } = req.query;
             const fields = 'id, title, startedBy, recievedBy, createdAt, updatedAt'
-            const data = await this.messageService.getConversationWithJoinUsers(CONVERSATIONS, 'startedBy', Number(senderId), 'recievedBy', Number(senderId), fields) as IUser[];
-            if (!data || data.length <= 0) return res.status(200).json(successAction(null, "No conversations found!"));
-            return res.status(200).json(successAction({ conversations: data }, "Conversations fetched successfully!"));
+            const conversations = await this.messageService.getConversationWithJoinUsers(CONVERSATIONS, 'startedBy', Number(senderId), 'recievedBy', Number(senderId), fields) as IUser[];
+            if (!conversations || conversations.length <= 0) return res.status(200).json(successAction(null, "No conversations found!"));
+            return res.status(200).json(successAction({conversations}, "Conversations fetched successfully!"));
         } catch (error) {
             return next(error);
         }
@@ -45,10 +45,11 @@ export default class UserController {
 
     getMessages = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
-            const { conversationId } = req.query;
-            const data = await this.databaseService.getData(MESSAGES, 'conversationId', conversationId) as IUser[];
+            const { conversationId, page, limit } = req.query;
+            const data = await this.databaseService.getData(MESSAGES, 'conversationId', conversationId, undefined, Number(page || 1), Number(limit || 10), 'DESC') as IUser[];
             if (!data || data.length <= 0) return res.status(200).json(successAction(null, "No messages found!"));
-            return res.status(200).json(successAction({ messages: data }, "Messages fetched successfully!"));
+            const totalCount = await this.databaseService.getCount(MESSAGES, 'conversationId', conversationId);
+            return res.status(200).json(successAction({ messages: data.reverse(), totalCount }, "Messages fetched successfully!"));
         } catch (error) {
             return next(error);
         }

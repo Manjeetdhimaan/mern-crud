@@ -14,10 +14,12 @@ export default function SideBar() {
                 <li className='py-2'><a href="">Users</a></li>
                 <li className='py-2'><a href="">Tickets</a></li>
                 <li className='py-2'><a href="">Notices</a></li>
-                <li>
-                    <Form action="/logout" method="post">
-                        <button>Logout</button>
-                    </Form>
+                <li className='py-2'>
+                    <a >
+                        <Form action="/logout" method="post">
+                            <button className='p-0 bg-transparent outline-none hover:border-transparent'>Logout</button>
+                        </Form>
+                    </a>
                 </li>
             </ul>
         </aside>

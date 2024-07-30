@@ -3,6 +3,7 @@ import { Server as SocketServer } from "socket.io";
 
 import DatabaseService from "../services/db.service";
 import { MESSAGES } from "../utils/database-tables";
+import { ResultSetHeader } from "mysql2";
 
 export default function socketServer(server: HttpServer<typeof IncomingMessage, typeof ServerResponse>) {
     const db = new DatabaseService();
@@ -24,20 +25,20 @@ export default function socketServer(server: HttpServer<typeof IncomingMessage, 
             socket.join(room);
         });
 
-        socket.on('private_message', async ({ content, recieverId, senderId, conversationId }) => {
-            console.log('Message recieved: ', content, conversationId);
+        socket.on('private_message', async ({ body, ownerId, conversationId, messageType }) => {
+            console.log('Message recieved: ', body, conversationId);
             const payload = {
-                ownerId: senderId,
-                conversationId: conversationId,
-                messageType: 'text',
-                body: content
+                ownerId,
+                conversationId,
+                messageType,
+                body
             }
-            chatNamseSpace.in(room).emit('private_message', {content, recieverId, senderId, conversationId});
-            await db.insertData(payload, MESSAGES);
+            const response = await db.insertData(payload, MESSAGES) as ResultSetHeader;
+            chatNamseSpace.in(room).emit('private_message', {body, ownerId, conversationId, messageType, id: response.insertId});
         });
 
         socket.on('disconnect', (reason) => {
-            console.log('A user disconnected with ID:, ', reason);
+            console.log('A user disconnected:, ', reason);
         });
     });
 

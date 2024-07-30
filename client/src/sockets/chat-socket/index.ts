@@ -1,7 +1,8 @@
 import { io } from "socket.io-client";
 
-import { baseAPIUrl } from "../../constants/local.constants";
 import { IMessage } from "../../models/message.model";
+import { baseAPIUrl } from "../../constants/local.constants";
+
 const socket = io(baseAPIUrl + '/chat');
 
 export function emitRoom(cnvsId: string) {
@@ -19,9 +20,10 @@ export function onPrivateMsg(setMessages: React.Dispatch<React.SetStateAction<IM
         if (location.pathname.includes(newMessage.conversationId)) {
             const message = {
                 ...newMessage,
-                ownerId: newMessage.senderId,
-                body: newMessage.content,
-
+                ownerId: newMessage.ownerId,
+                body: newMessage.body,
+                id: newMessage.id,
+                messageType: newMessage.messageType
             }
             setMessages((prevMessages) => [...prevMessages, message]);
         }
@@ -31,8 +33,8 @@ export function onPrivateMsg(setMessages: React.Dispatch<React.SetStateAction<IM
     });
 }
 
-export function emitPrivateMsg(currentMsg: string, recieverId: number, id: number, conversationId: string) {
-    socket.emit('private_message', { content: currentMsg.trim(), recieverId, senderId: Number(id), conversationId });
+export function emitPrivateMsg(currentMsg: string, ownerId: number, conversationId: string, messageType = 'text') {
+    socket.emit('private_message', { body: currentMsg.trim(), ownerId: Number(ownerId), conversationId, messageType });
 }
 
 export function offPrivateMsg() {
