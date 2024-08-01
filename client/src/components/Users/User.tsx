@@ -5,11 +5,12 @@ import { getUserId } from "../../util/auth";
 import { IUser } from "../../models/user.model";
 
 const messageBaseUrl = '/messages';
-let conversationId = '';
 
 const User: React.FC<IUser> = ({ fullName, id, isCoversation }) => {
     const navigate = useNavigate();
     const {conversationId: paramId} = useParams();
+
+   
 
     const startCoversation = async (recieverId: number) => {
         try {
@@ -30,10 +31,9 @@ const User: React.FC<IUser> = ({ fullName, id, isCoversation }) => {
 
     const fetchMessages = async (cnvsId: string) => {
         try {
-            if (conversationId === cnvsId) {
+            if (paramId === cnvsId) {
                 return;
             } else {
-                conversationId = cnvsId;
                 navigate(`/messages/${cnvsId}`);
             }
 

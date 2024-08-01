@@ -15,17 +15,24 @@ export function socketInit() {
     });
 }
 
-export function onPrivateMsg(setMessages: React.Dispatch<React.SetStateAction<IMessage[]>>) {
+export function onPrivateMsg(setMessages: React.Dispatch<React.SetStateAction<IMessage[]>>, messageWrapper: React.RefObject<HTMLDivElement>) {
     socket.on('private_message', (newMessage) => {  
         if (location.pathname.includes(newMessage.conversationId)) {
+            console.log(newMessage)
             const message = {
                 ...newMessage,
                 ownerId: newMessage.ownerId,
                 body: newMessage.body,
                 id: newMessage.id,
-                messageType: newMessage.messageType
+                messageType: newMessage.messageType,
+                createdAt: new Date()
             }
             setMessages((prevMessages) => [...prevMessages, message]);
+            // or you can show some notification to user that new message recieved
+            if (messageWrapper.current) {
+                const maxScroll = messageWrapper.current.scrollHeight;
+                messageWrapper.current.scrollTo({ top: maxScroll, behavior: 'auto' });
+            }
         }
         else {
             //show notification

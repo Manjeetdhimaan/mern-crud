@@ -3,5 +3,6 @@ export interface IMessage {
     content: string,
     body: string
     id: number,
-    messageType: string
+    messageType: string,
+    createdAt: string
 }

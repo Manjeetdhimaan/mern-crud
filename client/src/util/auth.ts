@@ -1,8 +1,8 @@
 import { redirect } from 'react-router-dom';
-import { token as localToken, userEmail, userId } from '../constants/local.constants';
+import { expiration, token as localToken, userEmail, userId } from '../constants/local.constants';
 
 export function getTokenDuration(): number {
-  const storedExpirationDate = localStorage.getItem('expiration') || 0;
+  const storedExpirationDate = localStorage.getItem(expiration) || 0;
   const expirationDate = new Date(storedExpirationDate);
   const now = new Date();
   const duration = expirationDate.getTime() - now.getTime();

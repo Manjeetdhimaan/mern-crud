@@ -16,12 +16,12 @@ const RenderMessageContent: React.FC<{ content: string, index: number, messages:
     const maxWords = 10;
     const words = content?.split(' ');
     const classes = "text-blue-500 hover:underline focus:outline-none cursor-pointer";
-    
+
     if (words && words.length > maxWords && !expanded[index]) {
         const shortenedContent = words.slice(0, maxWords).join(' ');
         return (
             <>
-                <div>
+                <div title={messages[index].createdAt}>
                     {shortenedContent}...{' '}
                 </div>
                 <small className="float-right">
@@ -37,7 +37,7 @@ const RenderMessageContent: React.FC<{ content: string, index: number, messages:
     } else if (expanded[index]) {
         return (
             <>
-                <div>
+                <div title={messages[index].createdAt}>
                     {content}{' '}
                 </div>
                 <small className="float-right">
@@ -51,7 +51,7 @@ const RenderMessageContent: React.FC<{ content: string, index: number, messages:
             </>
         );
     } else {
-        return <>{content}</>;
+        return <div title={messages[index].createdAt}>{content}</ div>;
     }
 }
 

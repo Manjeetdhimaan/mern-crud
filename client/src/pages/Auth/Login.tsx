@@ -28,12 +28,11 @@ function Login() {
 
             const token = response.data.token;
             const userPayload = JSON.parse(atob(token.split('.')[1]));
-
+            // console.log(userPayload);
             localStorage.setItem(localToken, token);
             localStorage.setItem(userId, userPayload._id);
             localStorage.setItem(userEmail, userPayload._email);
-            const expiration = new Date();
-            expiration.setHours(expiration.getHours() + 1);
+            const expiration = new Date(userPayload.exp * 1000);
             localStorage.setItem(localExpiration, expiration.toISOString());
 
             return navigate('/');
