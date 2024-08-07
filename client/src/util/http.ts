@@ -1,13 +1,13 @@
 import axios, { AxiosHeaders, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 import { getAuthToken } from './auth';
-import { baseAPIUrl } from '../constants/local.constants';
+import { BASE_API_URL } from '../constants/local.constants';
 
 class HttpClient {
     instance: AxiosInstance;
     constructor() {
         this.instance = axios.create({
-            baseURL: baseAPIUrl,
+            baseURL: BASE_API_URL,
         });
 
         this.instance.interceptors.request.use(

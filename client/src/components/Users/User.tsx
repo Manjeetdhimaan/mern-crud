@@ -9,10 +9,8 @@ const messageBaseUrl = '/messages';
 const User: React.FC<IUser> = ({ fullName, id, isCoversation }) => {
     const navigate = useNavigate();
     const {conversationId: paramId} = useParams();
-
-   
-
-    const startCoversation = async (recieverId: number) => {
+ 
+    const startCoversation = async (recieverId: number): Promise<void> => {
         try {
             const senderId = getUserId();
             const payload = {
@@ -26,10 +24,9 @@ const User: React.FC<IUser> = ({ fullName, id, isCoversation }) => {
             console.log(error);
             // Inform user about the error
         }
-
     }
 
-    const fetchMessages = async (cnvsId: string) => {
+    const fetchMessages = async (cnvsId: string): Promise<void> => {
         try {
             if (paramId === cnvsId) {
                 return;
@@ -43,12 +40,12 @@ const User: React.FC<IUser> = ({ fullName, id, isCoversation }) => {
         }
 
     }
-    const classes = `cursor-pointer ${String(id) === paramId ? 'underline': ''}`
+    const classes = `cursor-pointer p-4 w-[100%] inline-block ${String(id) === paramId ? 'bg-white border-l-4 border-solid border-l-violet-700 -ml-[4px] w-[102%]': ''}`;
     return (
-        <div className="py-2 px-4">
+        <div className="w-[100%] pl-[4px]">
             {/* <img src="sas" alt={fullName} /> */}
             
-            <a className={classes} onClick={() => isCoversation ? fetchMessages(String(id)) : startCoversation(Number(id))}>
+            <a className={classes + ''} onClick={() => isCoversation ? fetchMessages(String(id)) : startCoversation(Number(id))}>
                 {fullName}
             </a>
         </div>

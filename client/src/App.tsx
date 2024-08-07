@@ -65,6 +65,7 @@ export default App;
 // # Add animation using framer-motion
 // # send files in chat.
 // # Add reply feature in chat.
+// # Edit and delete message
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE

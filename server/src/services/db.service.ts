@@ -99,6 +99,7 @@ export default class DatabaseService {
         });
     }
 
+    // get count of rows in a table
     async getCount<T>(table: string, whereKey: string, whereValue: T, getDeleted?: boolean): Promise<number | Error> {
         return new Promise(async function (resolve, reject) {
             try {
@@ -115,12 +116,11 @@ export default class DatabaseService {
         })
     }
 
-    // common api service to get single( or can be multiple ) data dynamically from table.
+    // common api service to get single( or can be multiple ) data dynamically from table with two OR conditions.
     async getDataWithOrWhere<T>(table: string, whereKey: string, whereValue: T, orWhereKey: string, orWhereValue: T, fields = "*", getDeleted?: boolean): Promise<QueryResult | Error> {
         return new Promise(async function (resolve, reject) {
             try {
                 const extractedValue = typeof whereValue === 'string' ? `'${whereValue}'` : whereValue;
-                // const extractedORValue = typeof orWhereValue === 'string' ? `'${orWhereValue}'` : orWhereValue;
                 let query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue}`;
                 if (getDeleted === false) query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue} AND isDeleted = ${false}`;
                 if (getDeleted === true) query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue} AND isDeleted = ${true}`;
@@ -150,6 +150,22 @@ export default class DatabaseService {
             try {
                 const value = typeof whereValue === 'string' ? `${whereValue}` : whereValue;
                 const query = `DELETE FROM ${table} WHERE ${whereKey} = ${value}`;
+                const [result] = await db.query(query);
+                return resolve(result);
+            } catch (error) {
+                return reject(error);
+            }
+        });
+    }
+
+    async update<T>(table: string, updateKey: string, updateValue: T, whereKey: string, whereValue: T): Promise<QueryResult | Error> {
+        return new Promise(async function (resolve, reject) {
+            try {
+                // const whereType = typeof whereValue;
+                // const updateType = typeof updateValue;
+                // const wValue = whereType === 'string' || whereType === 'number' ? `${whereValue}` : whereValue;
+                // const uValue = typeof updateValue === 'string'  || updateType === 'number'  ? `${updateValue}` : updateValue;
+                const query = `UPDATE ${table} SET ${updateKey} = '${updateValue}' WHERE ${whereKey} = '${whereValue}'`;
                 const [result] = await db.query(query);
                 return resolve(result);
             } catch (error) {

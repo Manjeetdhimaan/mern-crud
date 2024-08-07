@@ -5,7 +5,7 @@ import { IMessage } from "../../models/message.model";
 const RenderMessageContent: React.FC<{ content: string, index: number, messages: IMessage[] }> = ({ content, index, messages }) => {
     const [expanded, setExpanded] = useState<boolean[]>(new Array(messages.length).fill(false));
 
-    const toggleMessage = (index: number) => {
+    const toggleMessage = (index: number): void => {
         setExpanded((prevExpanded) => {
             const newExpanded = [...prevExpanded];
             newExpanded[index] = !newExpanded[index];

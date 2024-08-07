@@ -1,10 +1,10 @@
 import { redirect } from 'react-router-dom';
-import { expiration, token, userEmail, userId } from '../../constants/local.constants';
+import { EXPIRATION, TOKEN, USER_ID, USER_EMAIL } from '../../constants/local.constants';
 
 export function action() {
-    localStorage.removeItem(token);
-    localStorage.removeItem(expiration);
-    localStorage.removeItem(userEmail);
-    localStorage.removeItem(userId);
+    localStorage.removeItem(TOKEN);
+    localStorage.removeItem(EXPIRATION);
+    localStorage.removeItem(USER_EMAIL);
+    localStorage.removeItem(USER_ID);
     return redirect('/');
 }

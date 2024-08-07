@@ -1,6 +1,6 @@
-export const userId = 'userId';
-export const token = 'token';
-export const userEmail = 'userEmail';
-export const expiration = 'expiration';
+export const USER_ID = 'userId';
+export const TOKEN = 'token';
+export const USER_EMAIL = 'userEmail';
+export const EXPIRATION = 'expiration';
 
-export const baseAPIUrl = 'http://localhost:4002/api/v1';
+export const BASE_API_URL = 'http://localhost:4002/api/v1';

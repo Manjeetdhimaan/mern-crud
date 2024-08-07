@@ -5,7 +5,7 @@ import {
     useActionData,
     useNavigation,
 } from 'react-router-dom';
-
+import { BASE_API_URL } from '../../constants/local.constants';
 
 function Signup() {
     const data: any = useActionData();
@@ -53,7 +53,7 @@ export async function action({ request }: any) {
     };
     // manjeetdhimaan60@gmail.com
 
-    const response = await fetch('http://localhost:4002/api/v1/users/sign-up', {
+    const response = await fetch(`${BASE_API_URL}/users/sign-up`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

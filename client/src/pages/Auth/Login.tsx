@@ -6,7 +6,7 @@ import {
 
 import http from '../../util/http';
 import { AxiosError } from 'axios';
-import { userEmail, userId, token as localToken, expiration as localExpiration } from '../../constants/local.constants';
+import { USER_EMAIL, USER_ID, TOKEN as localToken, EXPIRATION as localExpiration } from '../../constants/local.constants';
 
 function Login() {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -30,8 +30,8 @@ function Login() {
             const userPayload = JSON.parse(atob(token.split('.')[1]));
             // console.log(userPayload);
             localStorage.setItem(localToken, token);
-            localStorage.setItem(userId, userPayload._id);
-            localStorage.setItem(userEmail, userPayload._email);
+            localStorage.setItem(USER_ID, userPayload._id);
+            localStorage.setItem(USER_EMAIL, userPayload._email);
             const expiration = new Date(userPayload.exp * 1000);
             localStorage.setItem(localExpiration, expiration.toISOString());
 

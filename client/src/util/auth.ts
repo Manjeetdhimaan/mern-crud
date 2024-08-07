@@ -1,8 +1,8 @@
 import { redirect } from 'react-router-dom';
-import { expiration, token as localToken, userEmail, userId } from '../constants/local.constants';
+import { EXPIRATION, TOKEN as localToken, USER_EMAIL, USER_ID } from '../constants/local.constants';
 
 export function getTokenDuration(): number {
-  const storedExpirationDate = localStorage.getItem(expiration) || 0;
+  const storedExpirationDate = localStorage.getItem(EXPIRATION) || 0;
   const expirationDate = new Date(storedExpirationDate);
   const now = new Date();
   const duration = expirationDate.getTime() - now.getTime();
@@ -26,7 +26,7 @@ export function getAuthToken(): string | null {
 
 
 export function getUserEmail(): string | null {
-  const email = localStorage.getItem(userEmail);
+  const email = localStorage.getItem(USER_EMAIL);
   if (!email || email === 'undefined') {
     return null;
   }
@@ -44,7 +44,7 @@ export function tokenLoader(): string | Response {
 }
 
 export function getUserId(): string | null {
-    const id = localStorage.getItem(userId);
+    const id = localStorage.getItem(USER_ID);
     if (!id || id === 'undefined') {
       return null;
     }
