@@ -16,6 +16,8 @@ import {
   emitEditPrivateMsg,
   emitPrivateMsg,
   emitRoom,
+  offDeletePrivateMsg,
+  offEditPrivateMsg,
   offPrivateMsg,
   onDeletePrivateMessage,
   onEditPrivateMessage,
@@ -27,7 +29,9 @@ import {
   DeleteIcon,
   EditIcon,
   PlusIcon,
+  SendIcon,
 } from "../../components/UI/Icons/Icons";
+import LoadPreviousMessages from "../../components/Message/LoadPreviousMessages";
 
 const messageBaseUrl = "/messages";
 
@@ -39,6 +43,8 @@ export function Messages() {
   const [conversations, setConversations] = useState<IUser[]>([]);
   const [recieverUser, setRecieverUser] = useState<IUser | null>();
   const [loadingPreviousMsgs, setLoadingPreviousMsgs] =
+    useState<boolean>(false);
+    const [disableLoadPreviosMsg, setDisableLoadPreviosMsg] =
     useState<boolean>(false);
   const [isEditingMsg, setIsEditingMsg] = useState<boolean>(false);
   const [_, setCurrentEditMsg] = useState<IMessage | null>();
@@ -60,6 +66,8 @@ export function Messages() {
 
     return () => {
       offPrivateMsg();
+      offEditPrivateMsg();
+      offDeletePrivateMsg();
     };
   }, []);
 
@@ -145,6 +153,7 @@ export function Messages() {
     const response = await http.get(
       `${messageBaseUrl}/get-messages?conversationId=${conversationId}&page=${page}`
     );
+    setDisableLoadPreviosMsg(false);
     if (response && response.data && response.data.messages) {
       response.data.messages.forEach((message: IMessage, i: number) => {
         // add messages with settimeout to show scroll animation
@@ -162,6 +171,7 @@ export function Messages() {
   const onLoadPreviousMsgs = useCallback((): void => {
     setPage((prevPage) => prevPage + 1);
     setLoadingPreviousMsgs(true);
+    setDisableLoadPreviosMsg(true);
   }, []);
 
   const onEmitRoomAndFetchMsgs = useCallback(async (): Promise<void> => {
@@ -278,11 +288,20 @@ export function Messages() {
     },
   ];
 
+  const messageClasses = `text-cyan-50 px-3 py-1 rounded-xl inline-block max-w-[50%] text-left`;
+
   return (
     <section>
+      {
+        (conversationId && messages.length <= 0) && 
+        <div className="animate-spin ">
+        </div>
+      }
+      <div className="animate-spin ">
+        </div>
       <MessageHeader user={recieverUser as IUser} />
       <Users users={conversations}>
-        <div className="p-6 flex items-baseline">
+        <div className="p-6 flex items-baseline justify-between">
           <h2 className="text-2xl px-4">Conversations</h2>
           <a className="cursor-pointer">
             <PlusIcon stroke={3.5} className="size-4" />
@@ -295,27 +314,12 @@ export function Messages() {
             className="shadow-lg h-4/5 w-2/3 p-6 overflow-auto scrollbar-thin"
             ref={messageWrapper}
           >
-            {messages.length > 0 && (
-              <>
-                {totalCount > messages.length ? (
-                  <p
-                    className="text-center cursor-pointer"
-                    onClick={onLoadPreviousMsgs}
-                  >
-                    <a>Load previous messages</a>
-                  </p>
-                ) : (
-                  <p className="text-center">
-                    Conversation started on{" "}
-                    {new Date(messages[0].createdAt).getDate() +
-                      "-" +
-                      (new Date(messages[0].createdAt).getMonth() + 1) +
-                      "-" +
-                      new Date(messages[0].createdAt).getFullYear()}
-                  </p>
-                )}
-              </>
-            )}
+            <LoadPreviousMessages
+              messages={messages}
+              totalCount={totalCount}
+              onLoadPreviousMsgs={onLoadPreviousMsgs}
+              disableLoadPreviosMsg={disableLoadPreviosMsg}
+            />
 
             {/* Render messages */}
             {messages.map((message, index) => (
@@ -338,8 +342,8 @@ export function Messages() {
                   <span
                     className={
                       Number(id) === message.ownerId
-                        ? "bg-gray-700 text-cyan-50 px-3 py-1 rounded-xl inline-block max-w-[50%] text-left"
-                        : "bg-slate-500 text-cyan-50 px-3 py-1 rounded-xl inline-block max-w-[50%] text-left"
+                        ? `bg-gray-700 ${messageClasses}`
+                        : `bg-slate-500 ${messageClasses}`
                     }
                   >
                     {/* Used this component to show "Show more" button if message is too long */}
@@ -367,7 +371,7 @@ export function Messages() {
                 onKeyDown={handleKeyDown}
                 value={currentMsg}
                 onChange={(e) => setCurrentMsg(e.target.value)}
-                className="bg-red-50 w-[100%] py-4 px-8 pr-[30%] outline-none rounded-3xl resize-none scrollbar-none"
+                className={`bg-red-50 w-[100%] py-4 px-8 pr-[30%] outline-none rounded-3xl resize-none scrollbar-none border-2 ${isEditingMsg && "animate-blink-border"}`}
                 rows={1}
               ></textarea>
               <button
@@ -375,7 +379,7 @@ export function Messages() {
                 className="absolute right-2 top-[30px] rounded-2xl"
                 onClick={onSubmit}
               >
-                Send
+                <SendIcon />
               </button>
               {isEditingMsg && (
                 <a

@@ -65,7 +65,7 @@ export default App;
 // # Add animation using framer-motion
 // # send files in chat.
 // # Add reply feature in chat.
-// # Edit and delete message
+// # Add spinner while loading chats and also show http progress bar
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE
@@ -76,3 +76,4 @@ export default App;
 // # Set expiration time in localStorage properly from JWT token - DONE
 // # Show date and time for messages of everyday (eg: which message was sent on which date) -DONE
 // # Show username and details with which chatting is going on. -DONE
+// # Edit and delete message - Done

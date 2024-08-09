@@ -44,6 +44,7 @@ export function onPrivateMsg(
       }
     } else {
       //show notification::
+      new Notification(`New message from ${newMessage.fullName}`, {body: newMessage.body})
     }
   });
 }
@@ -136,4 +137,12 @@ export function emitDeletePrivateMsg(
 
 export function offPrivateMsg(): void {
   socket.off(PRIVATE_MESSAGE);
+}
+
+export function offEditPrivateMsg(): void {
+  socket.off(EDIT_PRIVATE_MESSAGE);
+}
+
+export function offDeletePrivateMsg(): void {
+  socket.off(DELETE_PRIVATE_MESSAGE);
 }

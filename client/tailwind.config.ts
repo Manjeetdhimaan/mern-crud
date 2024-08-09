@@ -5,7 +5,18 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        "blink-border": {
+            '0%': { border: "2px solid #ef4444" },
+            '50%': { border: "2px solid #ffffff"  },
+            '100%': { border: "2px solid #ef5555"  }
+        }
+    },
+    animation: {
+        "blink-border": 'blink-border 0.8s',
+    }
+    },
   },
   plugins: [
     function({ addUtilities }) {
