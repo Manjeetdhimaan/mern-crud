@@ -6,6 +6,7 @@ import { MESSAGES } from "../utils/database-tables";
 import { ResultSetHeader } from "mysql2";
 import {
   CONNECTION,
+  DELETE_PRIVATE_MESSAGE,
   DISCONNECT,
   EDIT_PRIVATE_MESSAGE,
   JOIN,
@@ -34,10 +35,11 @@ export default function socketServer(
       socket.join(room);
     });
 
+    // send/receive private message
     socket.on(
       PRIVATE_MESSAGE,
       async ({ body, ownerId, conversationId, messageType }) => {
-        console.log("Message recieved: ", body, conversationId);
+        // console.log("Message recieved: ", body, conversationId);
         const payload = {
           ownerId,
           conversationId,
@@ -58,9 +60,17 @@ export default function socketServer(
       }
     );
 
+    // edit private message
     socket.on(
       EDIT_PRIVATE_MESSAGE,
-      async ({ body, messageId, messageType, ownerId, createdAt, conversationId }) => {
+      async ({
+        body,
+        messageId,
+        messageType,
+        ownerId,
+        createdAt,
+        conversationId,
+      }) => {
         console.log("Edited Message recieved: ", body, messageId);
         const response = (await db.update(
           MESSAGES,
@@ -76,12 +86,26 @@ export default function socketServer(
             conversationId,
             messageType,
             id: messageId,
-            createdAt
+            createdAt,
           });
         }
-        console.log(response);
       }
     );
+
+    // delete private message
+    socket.on(DELETE_PRIVATE_MESSAGE, async ({ messageId, conversationId }) => {
+      const response = (await db.permanentDelete(
+        MESSAGES,
+        "id",
+        messageId
+      )) as ResultSetHeader;
+      if (response && response.affectedRows) {
+        chatNamseSpace.in(room).emit(DELETE_PRIVATE_MESSAGE, {
+          messageId,
+          conversationId,
+        });
+      }
+    });
 
     socket.on(DISCONNECT, (reason) => {
       console.log("A user disconnected:, ", reason);

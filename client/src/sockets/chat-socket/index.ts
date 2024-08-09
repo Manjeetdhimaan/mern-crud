@@ -4,6 +4,7 @@ import { IMessage } from "../../models/message.model";
 import { BASE_API_URL } from "../../constants/local.constants";
 import {
   CONNECT,
+  DELETE_PRIVATE_MESSAGE,
   EDIT_PRIVATE_MESSAGE,
   JOIN,
   PRIVATE_MESSAGE,
@@ -74,17 +75,16 @@ export function onEditPrivateMessage(
         messageType: newMessage.messageType,
         createdAt: new Date(newMessage.createdAt),
       };
-       
+
       setMessages((prevMessages) => {
-        const msgIdx = prevMessages.findIndex(msg => +msg.id === +message.id);
-        if(msgIdx > 0) {
-            prevMessages[msgIdx] = message
-            return [...prevMessages]
+        const msgIdx = prevMessages.findIndex((msg) => +msg.id === +message.id);
+        if (msgIdx > 0) {
+          prevMessages[msgIdx] = message;
+          return [...prevMessages];
         }
-        return [...prevMessages]
-      } );
+        return [...prevMessages];
+      });
       // or you can show some notification to user that new message recieved
-     
     } else {
       //show notification::
     }
@@ -104,6 +104,33 @@ export function emitEditPrivateMsg(
     conversationId,
     createdAt: currentMsg.createdAt,
     messageType,
+  });
+}
+
+export function onDeletePrivateMessage(
+  setMessages: React.Dispatch<React.SetStateAction<IMessage[]>>
+): void {
+  socket.on(DELETE_PRIVATE_MESSAGE, ({ messageId, conversationId }) => {
+    if (location.pathname.includes(conversationId)) {
+      setMessages((prevMessages) => {
+        const updatedMessages = prevMessages.filter(
+          (msg) => +msg.id !== +messageId
+        );
+        return [...updatedMessages];
+      });
+    } else {
+      //show notification::
+    }
+  });
+}
+
+export function emitDeletePrivateMsg(
+  messageId: number,
+  conversationId: string
+): void {
+  socket.emit(DELETE_PRIVATE_MESSAGE, {
+    messageId,
+    conversationId,
   });
 }
 

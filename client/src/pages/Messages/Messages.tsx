@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import http from "../../util/http";
 import Users from "../../components/Users/Users";
+import PopupMenu from "../../components/UI/PopupMenu/PopupMenu";
 import MessageHeader from "../../components/Message/MessageHeader";
 import RenderMessageDate from "../../components/Message/RenderMessageDate";
 import RenderMessageContent from "../../components/Message/RenderMessageContent";
@@ -11,14 +12,22 @@ import { IMessage } from "../../models/message.model";
 import { useLoaderData, useParams } from "react-router-dom";
 import { Conversation } from "../../models/conversation.model";
 import {
+  emitDeletePrivateMsg,
   emitEditPrivateMsg,
   emitPrivateMsg,
   emitRoom,
   offPrivateMsg,
+  onDeletePrivateMessage,
   onEditPrivateMessage,
   onPrivateMsg,
   socketInit,
 } from "../../sockets/chat-socket";
+import { IMenuItem } from "../../models/ui.model";
+import {
+  DeleteIcon,
+  EditIcon,
+  PlusIcon,
+} from "../../components/UI/Icons/Icons";
 
 const messageBaseUrl = "/messages";
 
@@ -47,6 +56,7 @@ export function Messages() {
 
     onPrivateMsg(setMessages, messageWrapper);
     onEditPrivateMessage(setMessages);
+    onDeletePrivateMessage(setMessages);
 
     return () => {
       offPrivateMsg();
@@ -63,9 +73,8 @@ export function Messages() {
       setMessages([]);
     }
     onSetRecieverUser(conversations);
-    setIsEditingMsg(false);
-    setCurrentEditMsg(null);
-    setCurrentMsg('')
+    handleCancelEdit();
+    setCurrentMsg("");
   }, [conversationId]);
 
   useEffect(() => {
@@ -207,19 +216,17 @@ export function Messages() {
       setCurrentEditMsg((prevMsg) => {
         const newMsg = {
           ...prevMsg,
-          body: currentMsg
-        }
+          body: currentMsg,
+        };
         emitEditPrivateMsg(
-            newMsg as IMessage,
-            Number(id),
-            String(conversationId)
-          );
+          newMsg as IMessage,
+          Number(id),
+          String(conversationId)
+        );
         return newMsg as IMessage;
       });
-      
-      
-      setCurrentEditMsg(() => null);
-      setIsEditingMsg(false);
+
+      handleCancelEdit();
     } else {
       emitPrivateMsg(currentMsg.trim(), Number(id), String(conversationId));
     }
@@ -227,10 +234,61 @@ export function Messages() {
     // setMessageId(0);
   }, [currentMsg, conversationId, id]);
 
+  const handleCancelEdit = (): void => {
+    setCurrentEditMsg(() => null);
+    setIsEditingMsg(false);
+    setCurrentMsg("");
+  };
+
+  const handleDeleteMsg = (messageId: number): void => {
+    // ask for confirmation
+    emitDeletePrivateMsg(messageId, String(conversationId));
+    handleCancelEdit();
+  };
+
+  const handleMenuClick = <T extends unknown>(
+    label: string,
+    message?: T
+  ): void => {
+    const msg = message as IMessage;
+    switch (label) {
+      case "Edit":
+        onEditPrivateMsg(msg.body, msg.id);
+        break;
+
+      case "Delete":
+        handleDeleteMsg(msg.id);
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  const menuItems: IMenuItem[] = [
+    {
+      label: "Edit",
+      icon: <EditIcon />,
+      onClick: handleMenuClick,
+    },
+    {
+      label: "Delete",
+      icon: <DeleteIcon />,
+      onClick: handleMenuClick,
+    },
+  ];
+
   return (
     <section>
       <MessageHeader user={recieverUser as IUser} />
-      <Users users={conversations} isCoversation={true} />
+      <Users users={conversations}>
+        <div className="p-6 flex items-baseline">
+          <h2 className="text-2xl px-4">Conversations</h2>
+          <a className="cursor-pointer">
+            <PlusIcon stroke={3.5} className="size-4" />
+          </a>
+        </div>
+      </Users>
       {conversationId && conversations.length && messages.length > 0 ? (
         <div className="p-10 shadow-lg h-screen w-[80%] float-right">
           <div
@@ -261,7 +319,7 @@ export function Messages() {
 
             {/* Render messages */}
             {messages.map((message, index) => (
-              <>
+              <div key={`message-wrapper-${message.id}`}>
                 {/* Show particular date for messages */}
 
                 <RenderMessageDate
@@ -293,15 +351,12 @@ export function Messages() {
                     />
                   </span>
                   {Number(id) === message.ownerId && (
-                    <a
-                      className="inline-block ml-2 cursor-pointer"
-                      onClick={() => onEditPrivateMsg(message.body, message.id)}
-                    >
-                      ...
+                    <a className="ml-2">
+                      <PopupMenu items={menuItems} data={message} />
                     </a>
                   )}
                 </div>
-              </>
+              </div>
             ))}
           </div>
 
@@ -312,7 +367,7 @@ export function Messages() {
                 onKeyDown={handleKeyDown}
                 value={currentMsg}
                 onChange={(e) => setCurrentMsg(e.target.value)}
-                className="bg-red-50 w-[100%] py-4 px-8 pr-[20%] outline-none rounded-3xl resize-none scrollbar-none"
+                className="bg-red-50 w-[100%] py-4 px-8 pr-[30%] outline-none rounded-3xl resize-none scrollbar-none"
                 rows={1}
               ></textarea>
               <button
@@ -322,6 +377,14 @@ export function Messages() {
               >
                 Send
               </button>
+              {isEditingMsg && (
+                <a
+                  className="absolute right-[12%] top-[40px] rounded-2xl cursor-pointer text-red-600"
+                  onClick={handleCancelEdit}
+                >
+                  Cancel editing
+                </a>
+              )}
             </div>
           )}
         </div>
