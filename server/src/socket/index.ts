@@ -39,7 +39,7 @@ export default function socketServer(
     socket.on(
       PRIVATE_MESSAGE,
       async ({ body, ownerId, conversationId, messageType }) => {
-        console.log("Message recieved: ", body, conversationId);
+        // console.log("Message recieved: ", body, conversationId);
         const payload = {
           ownerId,
           conversationId,

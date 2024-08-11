@@ -1,11 +1,19 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import Users from "../../components/Users/Users";
 import PopupMenu from "../../components/UI/PopupMenu/PopupMenu";
 import MessageHeader from "../../components/Message/MessageHeader";
 import RenderMessageDate from "../../components/Message/RenderMessageDate";
+import LoadPreviousMessages from "../../components/Message/LoadPreviousMessages";
 import RenderMessageContent from "../../components/Message/RenderMessageContent";
+import {
+  DeleteIcon,
+  EditIcon,
+  LinkIcon,
+  PlusIcon,
+  SendIcon,
+} from "../../components/UI/Icons/Icons";
 import { IUser } from "../../models/user.model";
 import { IMessage } from "../../models/message.model";
 import { useLoaderData, useParams } from "react-router-dom";
@@ -24,13 +32,6 @@ import {
 } from "../../sockets/chat-socket";
 import { IMenuItem } from "../../models/ui.model";
 import {
-  DeleteIcon,
-  EditIcon,
-  PlusIcon,
-  SendIcon,
-} from "../../components/UI/Icons/Icons";
-import LoadPreviousMessages from "../../components/Message/LoadPreviousMessages";
-import {
   fetchConversations,
   fetchMessages,
   fetchPreviousMessages,
@@ -39,15 +40,18 @@ import { RootState } from "../../store";
 import { messageActions } from "../../store/message-slice";
 
 export function Messages() {
+  // Local properties
   const [currentMsg, setCurrentMsg] = useState<string>("");
   const [loadingPreviousMsgs, setLoadingPreviousMsgs] =
     useState<boolean>(false);
   const [isEditingMsg, setIsEditingMsg] = useState<boolean>(false);
   const [_, setCurrentEditMsg] = useState<IMessage | null>();
   const messageWrapper = useRef<HTMLDivElement>(null);
-
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { conversationId } = useParams();
   const id = useLoaderData();
+
+  // Redux properties
   const dispatch = useDispatch();
   const conversations = useSelector(
     (state: RootState) => state.message.conversations
@@ -62,7 +66,9 @@ export function Messages() {
   const totalCount = useSelector(
     (state: RootState) => state.message.totalCount
   );
-  const disableLoadPreviosMsg = useSelector((state: RootState) => state.message.disableLoadPreviosMsg)
+  const disableLoadPreviosMsg = useSelector(
+    (state: RootState) => state.message.disableLoadPreviosMsg
+  );
 
   useEffect(() => {
     // Initialize socket.io::
@@ -95,7 +101,7 @@ export function Messages() {
       );
       dispatch(fetchMessages(String(conversationId)));
     }
-    dispatch(messageActions.setPage({page: 1}));
+    dispatch(messageActions.setPage({ page: 1 }));
     emitRoom(String(conversationId));
     setLoadingPreviousMsgs(false);
     handleCancelEdit();
@@ -158,8 +164,9 @@ export function Messages() {
       currentMessage.body = messageBody;
       setCurrentEditMsg(() => currentMessage);
       setCurrentMsg(currentMessage.body);
+      handleInput();
     } else {
-      // show notification or handle error::
+      // show notification
     }
   };
 
@@ -178,7 +185,7 @@ export function Messages() {
     }
     setLoadingPreviousMsgs(false);
     if (isEditingMsg) {
-      setCurrentEditMsg((prevMsg) => {
+      setCurrentEditMsg((prevMsg): IMessage => {
         const newMsg = {
           ...prevMsg,
           body: currentMsg,
@@ -196,6 +203,7 @@ export function Messages() {
       emitPrivateMsg(currentMsg.trim(), Number(id), String(conversationId));
     }
     setCurrentMsg("");
+    handleInput();
     // setMessageId(0);
   }, [currentMsg, conversationId, id]);
 
@@ -203,6 +211,7 @@ export function Messages() {
     setCurrentEditMsg(() => null);
     setIsEditingMsg(false);
     setCurrentMsg("");
+    handleInput();
   };
 
   const handleDeleteMsg = (messageId: number): void => {
@@ -244,6 +253,22 @@ export function Messages() {
     },
   ];
 
+  const handleInput = () => {
+    setTimeout(() => {
+      if (textareaRef.current) {
+        if (textareaRef.current.scrollHeight > 56) {
+          textareaRef.current.style.height = "auto"; // Reset height
+          textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Set new height
+        }
+      }
+    });
+  };
+
+  const handleChangeInput = (event: ChangeEvent<HTMLTextAreaElement>): void => {
+    setCurrentMsg(event.target.value);
+    handleInput();
+  };
+
   const messageClasses = `text-cyan-50 px-3 py-1 rounded-xl inline-block max-w-[50%] text-left`;
 
   return (
@@ -260,9 +285,9 @@ export function Messages() {
       </Users>
 
       {conversationId && conversations.length && messages.length > 0 ? (
-        <div className="p-10 shadow-lg h-screen w-[80%] float-right">
+        <div className="p-10 shadow-lg h-screen w-[80%] float-right relative max-h-[90vh]">
           <div
-            className="shadow-lg h-4/5 w-2/3 p-6 overflow-auto scrollbar-thin"
+            className="h-4/5 w-3/4 pr-[8%] pl-[2%] overflow-auto scrollbar-thin max-h-[80%]"
             ref={messageWrapper}
           >
             <LoadPreviousMessages
@@ -302,7 +327,7 @@ export function Messages() {
                       key={`content-${message.id}`}
                       content={message.body}
                       index={index}
-                      messages={messages}
+                      message={message}
                     />
                   </span>
                   {Number(id) === message.ownerId && (
@@ -316,32 +341,50 @@ export function Messages() {
           </div>
 
           {conversationId && (
-            <div className="w-2/3 py-6 h-6 relative">
-              <textarea
-                placeholder="Message..."
-                onKeyDown={handleKeyDown}
-                value={currentMsg}
-                onChange={(e) => setCurrentMsg(e.target.value)}
-                className={`bg-red-50 w-[100%] py-4 px-8 pr-[30%] outline-none rounded-3xl resize-none scrollbar-none border-2 ${
-                  isEditingMsg && "animate-blink-border"
-                }`}
-                rows={1}
-              ></textarea>
-              <button
-                disabled={!currentMsg || !currentMsg.trim()}
-                className="absolute right-2 top-[30px] rounded-2xl"
-                onClick={onSubmit}
-              >
-                <SendIcon />
-              </button>
-              {isEditingMsg && (
-                <a
-                  className="absolute right-[12%] top-[40px] rounded-2xl cursor-pointer text-red-600"
-                  onClick={handleCancelEdit}
+            <div className="w-2/3 relative flex mt-[40px]">
+              <div className="bottom-[-80px] w-[100%] absolute">
+                <label
+                  htmlFor="file-change-message"
+                  className="cursor-pointer inline-block w-[25px] h-[25px] absolute bottom-[12px] min-h-[38px] left-5 rotate-[-45deg]"
                 >
-                  Cancel editing
-                </a>
-              )}
+                  <input
+                    type="file"
+                    className="hidden"
+                    id="file-change-message"
+                  />
+                  <LinkIcon stroke={2} className="size-6" />
+                </label>
+
+                <textarea
+                  placeholder="Message..."
+                  onKeyDown={handleKeyDown}
+                  value={currentMsg}
+                  onChange={handleChangeInput}
+                  className={`bg-red-50 w-[100%] py-4 px-12 pr-[30%] max-h-32 outline-none rounded-3xl scrollbar-none resize-none border-2 ${
+                    isEditingMsg && "animate-blink-border"
+                  }`}
+                  ref={textareaRef}
+                  rows={1}
+                ></textarea>
+                <button
+                  disabled={!currentMsg || !currentMsg.trim()}
+                  className="absolute right-2 bottom-[12px] rounded-2xl"
+                  onClick={onSubmit}
+                >
+                  <SendIcon />
+                </button>
+                {isEditingMsg && (
+                  <>
+                    <small className="absolute left-[6.5%] top-0 underline text-red-500 bg-red-50 border-t-2">Editing Message</small>
+                    <a
+                      className="absolute right-[12%] bottom-[24px] rounded-2xl cursor-pointer text-red-600"
+                      onClick={handleCancelEdit}
+                    >
+                      Cancel editing
+                    </a>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>

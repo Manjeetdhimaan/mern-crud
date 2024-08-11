@@ -2,8 +2,8 @@ import React, { useState } from "react";
 
 import { IMessage } from "../../models/message.model";
 
-const RenderMessageContent: React.FC<{ content: string, index: number, messages: IMessage[] }> = ({ content, index, messages }) => {
-    const [expanded, setExpanded] = useState<boolean[]>(new Array(messages.length).fill(false));
+const RenderMessageContent: React.FC<{ content: string, index: number, message: IMessage }> = ({ content, index, message }) => {
+    const [expanded, setExpanded] = useState<boolean[]>(new Array().fill(false));
 
     const toggleMessage = (index: number): void => {
         setExpanded((prevExpanded) => {
@@ -21,7 +21,7 @@ const RenderMessageContent: React.FC<{ content: string, index: number, messages:
         const shortenedContent = words.slice(0, maxWords).join(' ');
         return (
             <>
-                <div title={messages[index].createdAt}>
+                <div title={message.createdAt}>
                     {shortenedContent}...{' '}
                 </div>
                 <small className="float-right">
@@ -37,7 +37,7 @@ const RenderMessageContent: React.FC<{ content: string, index: number, messages:
     } else if (expanded[index]) {
         return (
             <>
-                <div title={messages[index].createdAt}>
+                <div title={message.createdAt}>
                     {content}{' '}
                 </div>
                 <small className="float-right">
@@ -51,7 +51,7 @@ const RenderMessageContent: React.FC<{ content: string, index: number, messages:
             </>
         );
     } else {
-        return <div title={messages[index].createdAt}>{content}</ div>;
+        return <div title={message.createdAt}>{content}</ div>;
     }
 }
 

@@ -73,21 +73,11 @@ export function emitPrivateMsg(
 export function onEditPrivateMessage(dispatch: Dispatch): void {
   socket.on(EDIT_PRIVATE_MESSAGE, (newMessage) => {
     if (location.pathname.includes(newMessage.conversationId)) {
-      const message = {
-        ...newMessage,
-        ownerId: newMessage.ownerId,
-        body: newMessage.body,
-        id: newMessage.id,
-        messageType: newMessage.messageType,
-        createdAt: new Date(newMessage.createdAt).toISOString(),
-      };
       dispatch(
         messageActions.onEditMessage({
-          newMessage: message,
+          newMessage,
         })
       );
-    } else {
-      //show notification::
     }
   });
 }

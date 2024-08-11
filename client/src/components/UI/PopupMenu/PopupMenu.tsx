@@ -28,7 +28,7 @@ const PopupMenu: React.FC<IPopupMenuProps> = ({ items, data }) => {
         const spaceAbove = buttonRect.top;
 
         // Check if there is enough space below the button to display the menu
-        if (spaceBelow < 150 && spaceAbove > 150) {
+        if (spaceBelow < 250 && spaceAbove > 150) {
           // Assuming the menu height is around 150px
           setMenuPosition("top");
         } else {
