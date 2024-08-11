@@ -6,7 +6,7 @@ export interface Conversation {
     email: string,
     receivedByEmail: string,
     startedByEmail: string,
-    recieverId: number,
+    receiverId: number,
     receivedById: number,
     startedById: number,
     conversationId: string

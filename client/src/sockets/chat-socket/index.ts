@@ -9,6 +9,8 @@ import {
   JOIN,
   PRIVATE_MESSAGE,
 } from "../../constants/socket.constants";
+import { Dispatch } from "@reduxjs/toolkit";
+import { messageActions } from "../../store/message-slice";
 
 const socket = io(BASE_API_URL + "/chat");
 
@@ -23,7 +25,7 @@ export function socketInit(): void {
 }
 
 export function onPrivateMsg(
-  setMessages: React.Dispatch<React.SetStateAction<IMessage[]>>,
+  dispatch: Dispatch,
   messageWrapper: React.RefObject<HTMLDivElement>
 ): void {
   socket.on(PRIVATE_MESSAGE, (newMessage) => {
@@ -34,17 +36,22 @@ export function onPrivateMsg(
         body: newMessage.body,
         id: newMessage.id,
         messageType: newMessage.messageType,
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
       };
-      setMessages((prevMessages) => [...prevMessages, message]);
-      // or you can show some notification to user that new message recieved
+      dispatch(
+        messageActions.setMessagesOnAdd({
+          message: message,
+        })
+      );
       if (messageWrapper.current) {
         const maxScroll = messageWrapper.current.scrollHeight;
         messageWrapper.current.scrollTo({ top: maxScroll, behavior: "auto" });
       }
     } else {
       //show notification::
-      new Notification(`New message from ${newMessage.fullName}`, {body: newMessage.body})
+      new Notification(`New message from ${newMessage.fullName}`, {
+        body: newMessage.body,
+      });
     }
   });
 }
@@ -63,9 +70,7 @@ export function emitPrivateMsg(
   });
 }
 
-export function onEditPrivateMessage(
-  setMessages: React.Dispatch<React.SetStateAction<IMessage[]>>
-): void {
+export function onEditPrivateMessage(dispatch: Dispatch): void {
   socket.on(EDIT_PRIVATE_MESSAGE, (newMessage) => {
     if (location.pathname.includes(newMessage.conversationId)) {
       const message = {
@@ -74,18 +79,13 @@ export function onEditPrivateMessage(
         body: newMessage.body,
         id: newMessage.id,
         messageType: newMessage.messageType,
-        createdAt: new Date(newMessage.createdAt),
+        createdAt: new Date(newMessage.createdAt).toISOString(),
       };
-
-      setMessages((prevMessages) => {
-        const msgIdx = prevMessages.findIndex((msg) => +msg.id === +message.id);
-        if (msgIdx > 0) {
-          prevMessages[msgIdx] = message;
-          return [...prevMessages];
-        }
-        return [...prevMessages];
-      });
-      // or you can show some notification to user that new message recieved
+      dispatch(
+        messageActions.onEditMessage({
+          newMessage: message,
+        })
+      );
     } else {
       //show notification::
     }
@@ -108,17 +108,14 @@ export function emitEditPrivateMsg(
   });
 }
 
-export function onDeletePrivateMessage(
-  setMessages: React.Dispatch<React.SetStateAction<IMessage[]>>
-): void {
+export function onDeletePrivateMessage(dispatch: Dispatch): void {
   socket.on(DELETE_PRIVATE_MESSAGE, ({ messageId, conversationId }) => {
     if (location.pathname.includes(conversationId)) {
-      setMessages((prevMessages) => {
-        const updatedMessages = prevMessages.filter(
-          (msg) => +msg.id !== +messageId
-        );
-        return [...updatedMessages];
-      });
+      dispatch(
+        messageActions.onDeleteMessage({
+          messageId,
+        })
+      );
     } else {
       //show notification::
     }

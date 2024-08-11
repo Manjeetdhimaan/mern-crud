@@ -1,16 +1,14 @@
+import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import http from "../../util/http";
 import Users from "../../components/Users/Users";
 import PopupMenu from "../../components/UI/PopupMenu/PopupMenu";
 import MessageHeader from "../../components/Message/MessageHeader";
 import RenderMessageDate from "../../components/Message/RenderMessageDate";
 import RenderMessageContent from "../../components/Message/RenderMessageContent";
-import { getUserEmail } from "../../util/auth";
 import { IUser } from "../../models/user.model";
 import { IMessage } from "../../models/message.model";
 import { useLoaderData, useParams } from "react-router-dom";
-import { Conversation } from "../../models/conversation.model";
 import {
   emitDeletePrivateMsg,
   emitEditPrivateMsg,
@@ -32,19 +30,17 @@ import {
   SendIcon,
 } from "../../components/UI/Icons/Icons";
 import LoadPreviousMessages from "../../components/Message/LoadPreviousMessages";
-
-const messageBaseUrl = "/messages";
+import {
+  fetchConversations,
+  fetchMessages,
+  fetchPreviousMessages,
+} from "../../store/message-actions";
+import { RootState } from "../../store";
+import { messageActions } from "../../store/message-slice";
 
 export function Messages() {
-  const [page, setPage] = useState<number>(1);
-  const [totalCount, setTotalCount] = useState<number>(0);
-  const [messages, setMessages] = useState<IMessage[]>([]);
   const [currentMsg, setCurrentMsg] = useState<string>("");
-  const [conversations, setConversations] = useState<IUser[]>([]);
-  const [recieverUser, setRecieverUser] = useState<IUser | null>();
   const [loadingPreviousMsgs, setLoadingPreviousMsgs] =
-    useState<boolean>(false);
-    const [disableLoadPreviosMsg, setDisableLoadPreviosMsg] =
     useState<boolean>(false);
   const [isEditingMsg, setIsEditingMsg] = useState<boolean>(false);
   const [_, setCurrentEditMsg] = useState<IMessage | null>();
@@ -52,18 +48,28 @@ export function Messages() {
 
   const { conversationId } = useParams();
   const id = useLoaderData();
+  const dispatch = useDispatch();
+  const conversations = useSelector(
+    (state: RootState) => state.message.conversations
+  );
+  const messages: IMessage[] = useSelector(
+    (state: RootState) => state.message.messages
+  );
+  const page = useSelector((state: RootState) => state.message.page);
+  const receiverUser = useSelector(
+    (state: RootState) => state.message.receiverUser
+  );
+  const totalCount = useSelector(
+    (state: RootState) => state.message.totalCount
+  );
+  const disableLoadPreviosMsg = useSelector((state: RootState) => state.message.disableLoadPreviosMsg)
 
   useEffect(() => {
-    // Initialize socket.io
-    if (id) {
-      fetchConversations(+id);
-    }
+    // Initialize socket.io::
     socketInit();
-
-    onPrivateMsg(setMessages, messageWrapper);
-    onEditPrivateMessage(setMessages);
-    onDeletePrivateMessage(setMessages);
-
+    onPrivateMsg(dispatch, messageWrapper);
+    onEditPrivateMessage(dispatch);
+    onDeletePrivateMessage(dispatch);
     return () => {
       offPrivateMsg();
       offEditPrivateMsg();
@@ -72,22 +78,58 @@ export function Messages() {
   }, []);
 
   useEffect(() => {
-    // called whenever conversation id changed (which means user has swithced the chat from one use to another)
-    setPage(1);
-    setTotalCount(0);
-    onEmitRoomAndFetchMsgs();
-    setLoadingPreviousMsgs(false);
-    if (!conversationId) {
-      setMessages([]);
+    dispatch(fetchConversations(Number(id)));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (conversationId) {
+      dispatch(
+        messageActions.setConversationId({
+          conversationId: conversationId,
+        })
+      );
+      dispatch(
+        messageActions.setReceiverUser({
+          conversations: conversations,
+        })
+      );
+      dispatch(fetchMessages(String(conversationId)));
     }
-    onSetRecieverUser(conversations);
+    dispatch(messageActions.setPage({page: 1}));
+    emitRoom(String(conversationId));
+    setLoadingPreviousMsgs(false);
     handleCancelEdit();
     setCurrentMsg("");
-  }, [conversationId]);
+  }, [dispatch, conversationId]);
+
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (messageWrapper.current) {
+  //       // Check if the scroll position is at the top
+  //       if (messageWrapper.current.scrollTop === 0) {
+  //         console.log("Reached the top of the div!");
+  //         // You can call a function here, like loading previous messages
+  //           onLoadPreviousMsgs();
+  //       }
+  //     }
+  //   };
+
+  //   const divElement = messageWrapper.current;
+  //   if (divElement) {
+  //     divElement.addEventListener("scroll", handleScroll);
+  //   }
+
+  //   // Cleanup the event listener on unmount
+  //   return () => {
+  //     if (divElement) {
+  //       divElement.removeEventListener("scroll", handleScroll);
+  //     }
+  //   };
+  // }, [messageWrapper.current?.scrollTop]);
 
   useEffect(() => {
     if (page > 1) {
-      fetchPreviousMessages();
+      dispatch(fetchPreviousMessages(String(conversationId), page));
     }
   }, [page]);
 
@@ -98,113 +140,26 @@ export function Messages() {
     }
   }, [messages.length]);
 
-  const fetchConversations = async (
-    senderId: number
-  ): Promise<IUser[] | undefined> => {
-    try {
-      const response = await http.get(
-        `${messageBaseUrl}/conversations?senderId=${senderId}`
-      );
-      if (response && response.data && response.data.conversations) {
-        const conversations = response.data.conversations;
-        const localUserEmail = getUserEmail();
-        const updatedConversations: IUser[] = conversations.map(
-          (conversation: Conversation) => {
-            const isSameUser = localUserEmail === conversation.startedByEmail;
-            return {
-              id: conversation.conversationId,
-              fullName: isSameUser
-                ? conversation.receivedByName
-                : conversation.startedByName,
-              email: isSameUser
-                ? conversation.receivedByEmail
-                : conversation.startedByEmail,
-              recieverId: isSameUser
-                ? conversation.receivedById
-                : conversation.startedById,
-            };
-          }
-        );
-        onEmitRoomAndFetchMsgs();
-        setConversations(() => updatedConversations);
-        setTotalCount(0);
-        onSetRecieverUser(updatedConversations);
-        return updatedConversations;
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchMessages = async (): Promise<void> => {
-    const response = await http.get(
-      `${messageBaseUrl}/get-messages?conversationId=${conversationId}&page=${1}`
+  const onLoadPreviousMsgs = (): void => {
+    dispatch(
+      messageActions.setPage({
+        page: page + 1,
+      })
     );
-
-    if (response && response.data && response.data.messages) {
-      setTotalCount(+response.data.totalCount);
-      setMessages(() => [...response.data.messages]);
-    } else {
-      setMessages(() => []);
-    }
-  };
-
-  const fetchPreviousMessages = async (): Promise<void> => {
-    const response = await http.get(
-      `${messageBaseUrl}/get-messages?conversationId=${conversationId}&page=${page}`
-    );
-    setDisableLoadPreviosMsg(false);
-    if (response && response.data && response.data.messages) {
-      response.data.messages.forEach((message: IMessage, i: number) => {
-        // add messages with settimeout to show scroll animation
-        setTimeout(() => {
-          setMessages((prevMsgs) => {
-            return [message, ...prevMsgs];
-          });
-        }, 30 * i);
-      });
-    } else {
-      setMessages(() => []);
-    }
-  };
-
-  const onLoadPreviousMsgs = useCallback((): void => {
-    setPage((prevPage) => prevPage + 1);
     setLoadingPreviousMsgs(true);
-    setDisableLoadPreviosMsg(true);
-  }, []);
-
-  const onEmitRoomAndFetchMsgs = useCallback(async (): Promise<void> => {
-    if (conversationId) {
-      emitRoom(conversationId);
-      await fetchMessages();
-    }
-  }, [conversationId, fetchMessages]);
-
-  const onSetRecieverUser = (conversations: IUser[]): void => {
-    const currentRecieverUser = conversations.find(
-      (conversation) => conversation.id === conversationId
-    );
-    if (currentRecieverUser) {
-      setRecieverUser(() => {
-        return { ...currentRecieverUser };
-      });
-    } else {
-      setRecieverUser(() => {
-        return null;
-      });
-    }
+    dispatch(messageActions.setDisableLoadPreviosMsg(true));
   };
 
   const onEditPrivateMsg = (messageBody: string, messageId: number) => {
     setIsEditingMsg(true);
     const currentMsg = messages.find((msg) => msg.id === messageId);
     if (currentMsg) {
-      currentMsg.body = messageBody;
-      setCurrentEditMsg(() => currentMsg);
-      setCurrentMsg(currentMsg.body);
+      const currentMessage: IMessage = JSON.parse(JSON.stringify(currentMsg));
+      currentMessage.body = messageBody;
+      setCurrentEditMsg(() => currentMessage);
+      setCurrentMsg(currentMessage.body);
     } else {
-      // show notification or handle error
+      // show notification or handle error::
     }
   };
 
@@ -267,6 +222,7 @@ export function Messages() {
         break;
 
       case "Delete":
+        setLoadingPreviousMsgs(true);
         handleDeleteMsg(msg.id);
         break;
 
@@ -292,14 +248,8 @@ export function Messages() {
 
   return (
     <section>
-      {
-        (conversationId && messages.length <= 0) && 
-        <div className="animate-spin ">
-        </div>
-      }
-      <div className="animate-spin ">
-        </div>
-      <MessageHeader user={recieverUser as IUser} />
+      <MessageHeader user={receiverUser as unknown as IUser} />
+
       <Users users={conversations}>
         <div className="p-6 flex items-baseline justify-between">
           <h2 className="text-2xl px-4">Conversations</h2>
@@ -308,6 +258,7 @@ export function Messages() {
           </a>
         </div>
       </Users>
+
       {conversationId && conversations.length && messages.length > 0 ? (
         <div className="p-10 shadow-lg h-screen w-[80%] float-right">
           <div
@@ -371,7 +322,9 @@ export function Messages() {
                 onKeyDown={handleKeyDown}
                 value={currentMsg}
                 onChange={(e) => setCurrentMsg(e.target.value)}
-                className={`bg-red-50 w-[100%] py-4 px-8 pr-[30%] outline-none rounded-3xl resize-none scrollbar-none border-2 ${isEditingMsg && "animate-blink-border"}`}
+                className={`bg-red-50 w-[100%] py-4 px-8 pr-[30%] outline-none rounded-3xl resize-none scrollbar-none border-2 ${
+                  isEditingMsg && "animate-blink-border"
+                }`}
                 rows={1}
               ></textarea>
               <button

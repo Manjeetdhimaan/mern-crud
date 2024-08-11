@@ -7,13 +7,13 @@ const User: React.FC<IUser> = ({ fullName, id, email, imgUrl }) => {
   const navigate = useNavigate();
   const { conversationId: paramId } = useParams();
 
-  // const startCoversation = async (recieverId: number): Promise<void> => {
+  // const startCoversation = async (receiverId: number): Promise<void> => {
   //     try {
   //         const senderId = getUserId();
   //         const payload = {
-  //             title: 'Sender=' + senderId + ': reciever=' + recieverId,
+  //             title: 'Sender=' + senderId + ': receiver=' + receiverId,
   //             startedBy: Number(senderId),
-  //             recievedBy: recieverId
+  //             recievedBy: receiverId
   //         }
   //         const response = await http.post(`${messageBaseUrl}/start`, payload);
   //         console.log(response); // TO DO: navigate to /messages/:conversationID

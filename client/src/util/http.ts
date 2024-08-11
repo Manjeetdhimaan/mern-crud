@@ -41,8 +41,16 @@ class HttpClient {
         return Promise.reject(error);
     };
 
-    get = (url: string, queryparams?: string, config?: AxiosHeaders) => {
+    get = <T>(url: string, queryparams?: T, config?: AxiosHeaders) => {
         return this.instance.get(url, { params: queryparams, ...config });
+    };
+
+    getWithStream = (url: string, queryparams?: any, config?: AxiosHeaders) => {
+        return this.instance.get(url, {
+            params: queryparams,
+            responseType: 'blob',  // Set responseType to 'blob' for streaming
+            ...config
+        });
     };
 
     post = <T>(url: string, data: T, config?: AxiosHeaders) => {

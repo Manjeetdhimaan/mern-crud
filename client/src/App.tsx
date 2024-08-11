@@ -65,7 +65,8 @@ export default App;
 // # Add animation using framer-motion
 // # send files in chat.
 // # Add reply feature in chat.
-// # Add spinner while loading chats and also show http progress bar
+// # Add spinner while loading chats and also show http progress bar.
+// # Auto reload previous messages when reached top of container.
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE

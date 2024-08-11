@@ -78,7 +78,7 @@ const PopupMenu: React.FC<IPopupMenuProps> = ({ items, data }) => {
         <ArrowDownIcon />
       </button>
       {isOpen && (
-        <div className={`menu menu-${menuPosition}`} ref={menuRef}>
+        <div className={`menu animate-scale menu-${menuPosition}`} ref={menuRef}>
           <ul>{renderMenuItems(items)}</ul>
         </div>
       )}

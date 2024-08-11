@@ -1,6 +1,6 @@
 export interface IUser {
     id: number | string,
-    recieverId: number,
+    receiverId: number,
     name: string,
     imgUrl: string,
     fullName: string,

@@ -46,8 +46,10 @@ export default class UserController {
     getMessages = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             const { conversationId, page, limit } = req.query;
+            // this.databaseService.streamData(MESSAGES, 'conversationId', conversationId, res);
             const data = await this.databaseService.getData(MESSAGES, 'conversationId', conversationId, undefined, Number(page || 1), Number(limit || 20), 'DESC') as IUser[];
             if (!data || data.length <= 0) return res.status(200).json(successAction(null, "No messages found!"));
+            // data.forEach(message => console.log(message.id));
             const totalCount = await this.databaseService.getCount(MESSAGES, 'conversationId', conversationId);
             return res.status(200).json(successAction({ messages: data.reverse(), totalCount }, "Messages fetched successfully!"));
         } catch (error) {
