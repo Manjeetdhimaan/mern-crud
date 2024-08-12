@@ -10,6 +10,7 @@ const initialState = {
   conversations: [],
   receiverUser: null,
   disableLoadPreviosMsg: false,
+  isLoading: false
 };
 
 const messageSlice = createSlice({
@@ -30,7 +31,6 @@ const messageSlice = createSlice({
 
     setMessages(state, action) {
       state.messages = action.payload.messages;
-      //   state.totalCount = action.payload.totalCount;
     },
 
     setMessagesOnAdd(state, action) {
@@ -38,7 +38,6 @@ const messageSlice = createSlice({
         ...state.messages,
         action.payload.message,
       ];
-      //   state.totalCount = action.payload.totalCount;
     },
 
     setMessagesWithPrevious(state, action) {
@@ -47,7 +46,6 @@ const messageSlice = createSlice({
         ...action.payload.messages,
         ...previousMessages,
       ];
-      //   state.totalCount = action.payload.totalCount;
     },
 
     onEditMessage(state, action) {
@@ -98,6 +96,10 @@ const messageSlice = createSlice({
     setDisableLoadPreviosMsg(state, action) {
       state.disableLoadPreviosMsg = action.payload;
     },
+
+    setLoading(state, action) {
+      state.isLoading = action.payload;
+    }
   },
 });
 

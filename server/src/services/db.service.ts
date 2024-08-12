@@ -2,10 +2,8 @@ import { QueryResult } from "mysql2";
 
 import db, { poolPromise } from "../config/db";
 import { Response } from "express";
-import { Connection } from "mysql2/typings/mysql/lib/Connection";
 
 export default class DatabaseService {
-  // SQL injection risk in this function
   async insertData<T>(
     data: { [key: string]: T },
     table: string
@@ -29,16 +27,16 @@ export default class DatabaseService {
         });
 
         //* Getting all the values to insert as values into table
+        // const values = Object.values(data)
+        //   .map((value) => (typeof value === "string" ? `'${value}'` : value))
+        //   .join(", ");
         const values = Object.values(data)
-          .map((value) => (typeof value === "string" ? `'${value}'` : value))
-          .join(", ");
-        // const placeholders = keys.map(() => '?').join(', ');
         const query = `INSERT INTO ${table} (${keys.join(
           ", "
-        )}) VALUES (${values})`;
+        )}) VALUES (${new Array(values.length).fill('?')})`;
         const [result] = await db.query<QueryResult>(
-          query
-          // values
+          query,
+          values
         );
         // manjeetdhimaan60@gmail.com
         return resolve(result);
@@ -48,7 +46,6 @@ export default class DatabaseService {
     });
   }
 
-  // Minimum SQL injection risk with improved logic
   // async insertData<T>(data: { [key: string]: T }, table: string): Promise<QueryResult | Error> {
   //     return new Promise(async function (resolve, reject) {
   //         try {
@@ -233,7 +230,8 @@ export default class DatabaseService {
         // const updateType = typeof updateValue;
         // const wValue = whereType === 'string' || whereType === 'number' ? `${whereValue}` : whereValue;
         // const uValue = typeof updateValue === 'string'  || updateType === 'number'  ? `${updateValue}` : updateValue;
-        const query = `UPDATE ${table} SET ${updateKey} = '${updateValue}' WHERE ${whereKey} = '${whereValue}'`;
+        const updateValueEscaped = (updateValue as string).replace(/'/g, "\\'");
+        const query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}' WHERE ${whereKey} = '${whereValue}'`;
         const [result] = await db.query(query);
         return resolve(result);
       } catch (error) {

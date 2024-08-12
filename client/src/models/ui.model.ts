@@ -17,3 +17,9 @@ export interface ImageWithFallbackProps {
   defaultSrc: string;
   className?: string;
 }
+
+export interface FileInputProps {
+  onFileChange: (files: FileList | null) => void;
+  id: string;
+  icon: React.ReactNode;
+}

@@ -36,11 +36,6 @@ export const fetchConversations = (senderId: number): any => {
           }
         );
         return updatedConversations;
-        // onEmitRoomAndFetchMsgs();
-        // setConversations(() => updatedConversations);
-        // setTotalCount(0);
-        // onSetreceiverUser(updatedConversations);
-        // return updatedConversations;
       } else {
         return [];
       }
@@ -83,6 +78,7 @@ export const fetchMessages = (conversationId: string): any => {
     };
 
     try {
+      dispatch(messageActions.setLoading(true));
       const data = await fetchData();
       if (data && data.messages && data.totalCount) {
         dispatch(
@@ -107,7 +103,10 @@ export const fetchMessages = (conversationId: string): any => {
           })
         );
       }
-    } catch (error) {}
+    } catch (error) {
+    } finally {
+      dispatch(messageActions.setLoading(false));
+    }
   };
 };
 
@@ -133,7 +132,6 @@ export const fetchPreviousMessages = (
     try {
       const messages = await fetchData();
       if (messages && messages.length > 0) {
-        
         dispatch(
           messageActions.setMessagesWithPrevious({
             messages: messages,

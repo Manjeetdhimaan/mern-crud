@@ -5,9 +5,7 @@ import { ArrowDownIcon } from "../Icons/Icons";
 import { useOutsideClick } from "../../../hooks/useOutsideClick";
 import { IMenuItem, IPopupMenuProps } from "../../../models/ui.model";
 
-// Custom hook to detect clicks outside the component
-
-const PopupMenu: React.FC<IPopupMenuProps> = ({ items, data }) => {
+const PopupMenu: React.FC<IPopupMenuProps> = ({ items, data }): React.ReactNode => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [menuPosition, setMenuPosition] = useState<"top" | "bottom">("bottom");
   const menuRef = useRef<HTMLDivElement | null>(null);

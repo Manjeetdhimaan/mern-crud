@@ -47,7 +47,7 @@ const User: React.FC<IUser> = ({ fullName, id, email, imgUrl }) => {
       <a className={classes + ""} onClick={() => fetchMessages(String(id))}>
         <Image
           src={imgUrl || ''}
-          defaultSrc="http://localhost:5173/vite.svg"
+          defaultSrc="/vite.svg"
           alt={fullName}
           className="mr-2 inline-block"
         />

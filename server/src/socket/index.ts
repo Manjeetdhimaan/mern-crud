@@ -29,6 +29,7 @@ export default function socketServer(
   chatNamseSpace.on(CONNECTION, (socket) => {
     let room = "";
     console.log("User connected with ID: ", socket.id);
+    
     socket.on(JOIN, ({ conversationId }) => {
       console.log("User joined room with ID: ", conversationId);
       room = "room " + conversationId;
@@ -71,7 +72,7 @@ export default function socketServer(
         createdAt,
         conversationId,
       }) => {
-        console.log("Edited Message recieved: ", body, messageId);
+        // console.log("Edited Message recieved: ", body, messageId);
         const response = (await db.update(
           MESSAGES,
           "body",

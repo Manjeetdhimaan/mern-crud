@@ -58,15 +58,20 @@ function App() {
 export default App;
 
 // TO DO: 
-// # Update database tables with correct spellings of values inside them.
-// # Replace fetch function with axios in signup
-// # Add user search feature / Only search users which are not in the list
-// # navigate to /messages/:conversationID  whenever user clicked on any user name/email to start a new conversation
-// # Add animation using framer-motion
+// # Create custom hook to make http requests.
+// # Add user search feature / Only search users which are not in the list.
+// # navigate to /messages/:conversationID  whenever user clicked on any user name/email to start a new conversation.
+// # Add spinner while loading chats and also show http progress bar using redux.
+// # Handle form validation properly.
 // # send files in chat.
 // # Add reply feature in chat.
-// # Add spinner while loading chats and also show http progress bar using redux.
+// # Add animation using framer-motion.
+// # Show flag on edited message.
+// # Add video and voice chat options
+// # Add functionality to mark messages: Delievered and Seen.
+// # Replace fetch function with axios in signup.
 // # Auto reload previous messages when reached top of container.
+// # Update database tables with correct spellings of values inside them.
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE
