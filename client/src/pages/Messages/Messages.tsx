@@ -4,6 +4,7 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import Users from "../../components/Users/Users";
 import PopupMenu from "../../components/UI/PopupMenu/PopupMenu";
 import messageService from "../../services/http/message.service";
+import FileInput from "../../components/UI/FileChange/FileChange";
 import MessageHeader from "../../components/Message/MessageHeader";
 import RenderMessageDate from "../../components/Message/RenderMessageDate";
 import LoadPreviousMessages from "../../components/Message/LoadPreviousMessages";
@@ -41,14 +42,11 @@ import {
 } from "../../store/message-actions";
 import { RootState } from "../../store";
 import { messageActions } from "../../store/message-slice";
-import FileInput from "../../components/UI/FileChange/FileChange";
 import FileShareInMessage, {
   PreviewFiles,
 } from "../../components/Message/FileShare";
-import {
-  maxFileSizeInMB,
-  minFileSizeInMB,
-} from "../../constants/files.constants";
+import { maxFileSizeInMB } from "../../constants/files.constants";
+import Spinner from "../../components/UI/Spinner/Spinner";
 
 let counter = 0;
 
@@ -61,6 +59,7 @@ export function Messages() {
   const navigate = useNavigate();
   const [_, setCurrentEditMsg] = useState<IMessage | null>();
   const [files, setFiles] = useState<FileList | null>(null);
+  const [isSendingFiles, setIsSendingFiles] = useState(false);
 
   const messageWrapper = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -296,12 +295,12 @@ export function Messages() {
         const file = files[i];
         const fileSizeInMB = file.size / (1024 * 1024);
 
-        if (fileSizeInMB >= maxFileSizeInMB || fileSizeInMB < minFileSizeInMB) {
+        if (fileSizeInMB >= maxFileSizeInMB) {
           // Display an error message or handle the oversized file as per your requirement
           console.error(`Maximum Image size can be ${maxFileSizeInMB} MB`);
-          if(files.length === 1) {
+          if (files.length === 1) {
             handleClearFileData();
-            return
+            return;
           }
           continue;
         }
@@ -330,6 +329,7 @@ export function Messages() {
     dispatch(messageActions.setModelIsOpen(false));
     // handle file sharing, create api on backend to handle files
     if (files) {
+      setIsSendingFiles(true);
       const filesLength = files.length;
       for (let i = 0; i < filesLength; i++) {
         const formData = new FormData();
@@ -340,10 +340,18 @@ export function Messages() {
         formData.append("ownerId", String(id));
         formData.append("conversationId", String(conversationId));
         formData.append("messageType", extenstion);
-        (await messageService.sendMessageWithFiles(
-          formData
-        )) as unknown as { message: IMessage };
+        (await messageService.sendMessageWithFiles(formData)) as unknown as {
+          message: IMessage;
+        };
+        if (messageWrapper.current && !loadingPreviousMsgs) {
+          const maxScroll = messageWrapper.current.scrollHeight;
+          messageWrapper.current.scrollTo({
+            top: maxScroll,
+            behavior: counter === 0 ? "instant" : "smooth",
+          });
+        }
       }
+      setIsSendingFiles(false);
     }
 
     handleClearFileData();
@@ -392,7 +400,7 @@ export function Messages() {
 
       {isLoading && (
         <div className="absolute top-[50%] left-[58%] bg-slate-800 text-white px-3 py-1 rounded z-50 flex items-center">
-          <div className="size-5 border-4 border-blue-500 border-t-transparent rounded-full animate-spin "></div>
+          <Spinner />
 
           {/* <p>Loading messages...</p> */}
         </div>
@@ -474,8 +482,13 @@ export function Messages() {
                 ))}
               </>
             }
+          
           </div>
-
+          {isSendingFiles && (
+              <div className="w-[50%] flex justify-end">
+                <Spinner />
+              </div>
+            )}
           {conversationId && (
             <div className="fixed bottom-4 w-[50%] flex mt-[40px]">
               <div

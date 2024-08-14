@@ -3,11 +3,12 @@ import path from "path";
 import multer from "multer";
 
 import { MIME_TYPE_MAP } from "../constants/files.constants";
+import { Request } from "express";
 
 const storage = multer.diskStorage({
   destination: function (
-    _: any,
-    file: any,
+    _: Request,
+    file: Express.Multer.File,
     cb: (error: Error | null, folderName: string) => void
   ) {
     const isValid = MIME_TYPE_MAP[file.mimetype];
@@ -29,8 +30,8 @@ const storage = multer.diskStorage({
     cb(error, "uploads");
   },
   filename: function (
-    _: any,
-    file: any,
+    _: Request,
+    file: Express.Multer.File,
     cb: (error: Error | null, folderName: string) => void
   ) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);

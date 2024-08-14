@@ -58,24 +58,21 @@ function App() {
 export default App;
 
 // TO DO: 
-// # Create custom hook to make http requests.
+// # Error handling in message sending and show spinner while sending files.
+// # Add option to preview and download files.
+// # Show error message when user selects a larger file in messages
+// # Dont show edit option on files in chat
 // # Add user search feature / Only search users which are not in the list.
 // # navigate to /messages/:conversationID  whenever user clicked on any user name/email to start a new conversation.
-// # Add spinner while loading chats and also show http progress bar using redux.
 // # Handle form validation properly.
-// # send files in chat.
 // # Add reply feature in chat.
 // # Add animation using framer-motion.
 // # Show flag on edited message.
 // # Add video and voice chat options
 // # Add functionality to mark messages: Delievered and Seen.
 // # Replace fetch function with axios in signup.
-// # Auto reload previous messages when reached top of container.
 // # Update database tables with correct spellings of values inside them.
-// # Remove any from multer
-// # Error handling in message sending and show spinner while sending files.
-// # Add option to preview and download files.
-// # Show error message when user selects a larger file in messages
+// # Auto reload previous messages when reached top of container. - not important
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE
@@ -87,3 +84,7 @@ export default App;
 // # Show date and time for messages of everyday (eg: which message was sent on which date) -DONE
 // # Show username and details with which chatting is going on. -DONE
 // # Edit and delete message - Done
+// # Add spinner while loading chats and also show http progress bar using redux. - DONE
+// # send files in chat. - DONE
+// # Create custom hook to make http requests. - DONE
+// # Remove any from multer - DONE

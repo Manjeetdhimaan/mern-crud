@@ -51,5 +51,5 @@ export const imageExtensions = [
   ".ico"
 ];
 
-export const maxFileSizeInMB = 1125.1;
-export const minFileSizeInMB = 0.001;
+export const maxFileSizeInMB = 5.1;
+export const minFileSizeInMB = 0.00001;
