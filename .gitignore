@@ -1,5 +1,5 @@
 server/node_modules
 server/.env
 server/database.json
-server/package-lock.json
+server/uploads
 client/node_modules

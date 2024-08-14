@@ -1,18 +1,41 @@
 import { io } from "socket.io-client";
+import { Dispatch } from "@reduxjs/toolkit";
 
-import { IMessage } from "../../models/message.model";
-import { BASE_API_URL } from "../../constants/local.constants";
+import { IMessage } from "../../../models/message.model";
+import { BASE_API_URL } from "../../../constants/local.constants";
 import {
   CONNECT,
   DELETE_PRIVATE_MESSAGE,
+  DISCONNECT,
   EDIT_PRIVATE_MESSAGE,
   JOIN,
   PRIVATE_MESSAGE,
-} from "../../constants/socket.constants";
-import { Dispatch } from "@reduxjs/toolkit";
-import { messageActions } from "../../store/message-slice";
+} from "../../../constants/socket.constants";
+import { messageActions } from "../../../store/message-slice";
 
 const socket = io(BASE_API_URL + "/chat");
+
+let conversationId: string = "";
+
+export function setConversationId(cnvsId: string) {
+  conversationId = cnvsId;
+}
+
+export function onDisconnect() {
+  socket.on(DISCONNECT, (reason) => {
+    console.log("A user disconnected:, ", reason);
+    let timer;
+    if (socket.disconnected) {
+      timer = setTimeout(() => {
+        console.log('Trying to reconnect...')
+        socketInit();
+        if (conversationId) emitRoom(conversationId);
+      }, 3000);
+    } else {
+      if (timer) clearTimeout(timer);
+    }
+  });
+}
 
 export function emitRoom(cnvsId: string): void {
   socket.emit(JOIN, { conversationId: cnvsId });

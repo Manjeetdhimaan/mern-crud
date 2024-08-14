@@ -1,10 +1,10 @@
 // import { NextFunction, Request, Response } from 'express';
-import { createServer } from 'http';
+import { createServer } from "http";
 
-import app from './app';
-import db from './config/db';
+import app from "./app";
+import db from "./config/db";
 // import RoleController from "./controllers/role.controller";
-import socketServer from './socket';
+import SocketServer from "./socket";
 
 // const mockReq = {
 //     query: { page: '1', perPage: '100' }
@@ -27,19 +27,19 @@ import socketServer from './socket';
 // };
 
 (function server(port: number) {
-    const httpServer = createServer(app);
-    socketServer(httpServer);
-    // const roleCtrl = new RoleController();
-    httpServer.listen(port, async () => {
-        try {
-            console.log(`Node express server running on port ${port}`);
-            await db.getConnection();
-            // console.log('Resigtering permissions...')
-            // await roleCtrl.registerRoles(mockReq, mockRes, mockNext);
-            console.log('Database connection succeeded');
+  const httpServer = createServer(app);
+  new SocketServer(httpServer);
 
-        } catch (error) {
-            console.log('Error connecting to mysql database =>', error);
-        }
-    });
-})(Number(process.env['SERVER_PORT'] || 4002));
+  // const roleCtrl = new RoleController();
+  httpServer.listen(port, async () => {
+    try {
+      console.log(`Node express server running on port ${port}`);
+      await db.getConnection();
+      // console.log('Resigtering permissions...')
+      // await roleCtrl.registerRoles(mockReq, mockRes, mockNext);
+      console.log("Database connection succeeded");
+    } catch (error) {
+      console.log("Error connecting to mysql database =>", error);
+    }
+  });
+})(Number(process.env["SERVER_PORT"] || 4002));

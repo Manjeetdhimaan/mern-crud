@@ -9,7 +9,7 @@ import { errorHandler } from "./middlewares/error-handler";
 
 export default (function app() {
     const app = express();
-
+    const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER || 'uploads';
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
     // set headers
@@ -34,6 +34,7 @@ export default (function app() {
 
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
+    app.use("/" + UPLOAD_FOLDER, express.static(path.join(__dirname , '..', UPLOAD_FOLDER)));
     app.use("/api/v1", routes);
     app.use(errorHandler);
 

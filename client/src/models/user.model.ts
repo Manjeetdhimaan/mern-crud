@@ -7,5 +7,6 @@ export interface IUser {
     createdAt: string,
     updatedAt: string,
     email: string,
-    isCoversation: boolean
+    // isCoversation: boolean,
+    onClickFn: <T>(data?: T) => void
 }

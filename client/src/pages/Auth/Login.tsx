@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import http from "../../util/http";
+import http from "../../services/http/http.service";
 import { AxiosError } from "axios";
 import {
   USER_EMAIL,

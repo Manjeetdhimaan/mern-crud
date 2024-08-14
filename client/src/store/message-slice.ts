@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { Conversation } from "../models/conversation.model";
-import { IMessage } from "../models/message.model";
+import { IMessage, IMessageInitialState } from "../models/message.model";
 
-const initialState = {
+const initialState: IMessageInitialState = {
   page: 1,
   conversationId: "",
   totalCount: 0,
@@ -10,7 +10,10 @@ const initialState = {
   conversations: [],
   receiverUser: null,
   disableLoadPreviosMsg: false,
-  isLoading: false
+  isLoading: false,
+  // Share file in messages: Properties
+  filesBase64: [],
+  modelIsOpen: false,
 };
 
 const messageSlice = createSlice({
@@ -99,7 +102,21 @@ const messageSlice = createSlice({
 
     setLoading(state, action) {
       state.isLoading = action.payload;
-    }
+    },
+
+    // Files sharing methods
+
+    setFilesBase64(state, action) {
+      state.filesBase64 = [...state.filesBase64, action.payload];
+    },
+
+    clearFilesBase64(state, action) {
+      state.filesBase64 = action.payload || [];
+    },
+
+    setModelIsOpen(state, action) {
+      state.modelIsOpen = action.payload;
+    },
   },
 });
 

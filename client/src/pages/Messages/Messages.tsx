@@ -3,6 +3,7 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import Users from "../../components/Users/Users";
 import PopupMenu from "../../components/UI/PopupMenu/PopupMenu";
+import messageService from "../../services/http/message.service";
 import MessageHeader from "../../components/Message/MessageHeader";
 import RenderMessageDate from "../../components/Message/RenderMessageDate";
 import LoadPreviousMessages from "../../components/Message/LoadPreviousMessages";
@@ -16,7 +17,7 @@ import {
 } from "../../components/UI/Icons/Icons";
 import { IUser } from "../../models/user.model";
 import { IMessage } from "../../models/message.model";
-import { useLoaderData, useParams } from "react-router-dom";
+import { useLoaderData, useNavigate, useParams } from "react-router-dom";
 import {
   emitDeletePrivateMsg,
   emitEditPrivateMsg,
@@ -26,10 +27,12 @@ import {
   offEditPrivateMsg,
   offPrivateMsg,
   onDeletePrivateMessage,
+  onDisconnect,
   onEditPrivateMessage,
   onPrivateMsg,
+  setConversationId,
   socketInit,
-} from "../../sockets/chat-socket";
+} from "../../services/socket/chat-socket";
 import { IMenuItem } from "../../models/ui.model";
 import {
   fetchConversations,
@@ -39,6 +42,13 @@ import {
 import { RootState } from "../../store";
 import { messageActions } from "../../store/message-slice";
 import FileInput from "../../components/UI/FileChange/FileChange";
+import FileShareInMessage, {
+  PreviewFiles,
+} from "../../components/Message/FileShare";
+import {
+  maxFileSizeInMB,
+  minFileSizeInMB,
+} from "../../constants/files.constants";
 
 let counter = 0;
 
@@ -48,10 +58,15 @@ export function Messages() {
   const [loadingPreviousMsgs, setLoadingPreviousMsgs] =
     useState<boolean>(false);
   const [isEditingMsg, setIsEditingMsg] = useState<boolean>(false);
+  const navigate = useNavigate();
   const [_, setCurrentEditMsg] = useState<IMessage | null>();
+  const [files, setFiles] = useState<FileList | null>(null);
+
   const messageWrapper = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const textareaWrapperRef = useRef<HTMLDivElement>(null);
+
   const { conversationId } = useParams();
   const id = useLoaderData();
 
@@ -76,12 +91,15 @@ export function Messages() {
 
   const isLoading = useSelector((state: RootState) => state.message.isLoading);
 
+  // Files sharing in message: Properties
+
   useEffect(() => {
     // Initialize socket.io::
     socketInit();
     onPrivateMsg(dispatch, messageWrapper);
     onEditPrivateMessage(dispatch);
     onDeletePrivateMessage(dispatch);
+    onDisconnect();
     return () => {
       offPrivateMsg();
       offEditPrivateMsg();
@@ -91,7 +109,7 @@ export function Messages() {
 
   useEffect(() => {
     dispatch(fetchConversations(Number(id)));
-  }, [dispatch]);
+  }, [dispatch, id]);
 
   useEffect(() => {
     if (conversationId) {
@@ -113,6 +131,8 @@ export function Messages() {
     setLoadingPreviousMsgs(false);
     handleCancelEdit();
     setCurrentMsg("");
+    handleClearFileData();
+    setConversationId(String(conversationId));
   }, [dispatch, conversationId]);
 
   useEffect(() => {
@@ -190,7 +210,12 @@ export function Messages() {
 
       handleCancelEdit();
     } else {
-      emitPrivateMsg(currentMsg.trim(), Number(id), String(conversationId));
+      emitPrivateMsg(
+        currentMsg.trim(),
+        Number(id),
+        String(conversationId),
+        "text"
+      );
     }
     setCurrentMsg("");
     handleInput();
@@ -230,25 +255,30 @@ export function Messages() {
     }
   };
 
+  const navigateToConversation = <T extends unknown>(cnvsId: T): void => {
+    if (conversationId === cnvsId) {
+      return;
+    } else {
+      navigate(`/messages/${cnvsId}`);
+    }
+  };
+
   const handleInput = () => {
     setTimeout(() => {
       if (textareaRef.current && textareaWrapperRef.current) {
-        // textareaWrapperRef.current.style.height = "auto";
-        // textareaWrapperRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-        if (textareaRef.current.scrollHeight > 52) {
+        if (textareaRef.current.scrollHeight > 50) {
           textareaRef.current.style.height = "auto"; // Reset height
           textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Set new height
-          textareaWrapperRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-          if (+textareaWrapperRef.current.style.height.slice(0, -2) === 56) {
-            textareaWrapperRef.current.style.height = `${60}px`;
-          }
-          if (+textareaRef.current.style.height.slice(0, -2) >= 80) {
-            textareaRef.current.style.height = `${80}px`; // Set new height
-          }
+          // textareaWrapperRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+          // if (+textareaWrapperRef.current.style.height.slice(0, -2) === 56) {
+          //   textareaWrapperRef.current.style.height = `${60}px`;
+          // }
+          // if (+textareaRef.current.style.height.slice(0, -2) >= 80) {
+          //   textareaRef.current.style.height = `${80}px`; // Set new height
+          // }
           if (+textareaRef.current.style.height.slice(0, -2) === 56) {
-            textareaRef.current.style.height = `${54}px`; // Set new height
+            textareaRef.current.style.height = `${50}px`; // Set new height
           }
-         
         }
       }
     });
@@ -259,8 +289,73 @@ export function Messages() {
     handleInput();
   };
 
-  const handleFileChange = (files: FileList | null) => {
-    console.log(files);
+  const handleFileChange = (files: FileList | null): void => {
+    if (files) {
+      setFiles(files);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileSizeInMB = file.size / (1024 * 1024);
+
+        if (fileSizeInMB >= maxFileSizeInMB || fileSizeInMB < minFileSizeInMB) {
+          // Display an error message or handle the oversized file as per your requirement
+          console.error(`Maximum Image size can be ${maxFileSizeInMB} MB`);
+          if(files.length === 1) {
+            handleClearFileData();
+            return
+          }
+          continue;
+        }
+        const fileReader = new FileReader();
+        fileReader.onloadend = () => {
+          const fileName = file.name;
+          const lastDotIndex = fileName.lastIndexOf(".");
+          const extenstion = fileName.substring(lastDotIndex);
+          const fileBase64Data = {
+            name: file.name,
+            url: fileReader.result as string,
+            size: file.size,
+            extenstion,
+          };
+          dispatch(messageActions.setFilesBase64(fileBase64Data));
+        };
+        if (files[i]) {
+          fileReader.readAsDataURL(files[i]);
+        }
+      }
+      dispatch(messageActions.setModelIsOpen(true));
+    }
+  };
+
+  const handleFileSharing = async () => {
+    dispatch(messageActions.setModelIsOpen(false));
+    // handle file sharing, create api on backend to handle files
+    if (files) {
+      const filesLength = files.length;
+      for (let i = 0; i < filesLength; i++) {
+        const formData = new FormData();
+        const fileName = files[i].name;
+        const lastDotIndex = fileName.lastIndexOf(".");
+        const extenstion = fileName.substring(lastDotIndex);
+        formData.append("file", files[i]);
+        formData.append("ownerId", String(id));
+        formData.append("conversationId", String(conversationId));
+        formData.append("messageType", extenstion);
+        (await messageService.sendMessageWithFiles(
+          formData
+        )) as unknown as { message: IMessage };
+      }
+    }
+
+    handleClearFileData();
+  };
+
+  const handleClearFileData = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    dispatch(messageActions.clearFilesBase64([]));
+    setFiles(null);
+    dispatch(messageActions.setModelIsOpen(false));
   };
 
   const menuItems: IMenuItem[] = [
@@ -280,8 +375,13 @@ export function Messages() {
 
   return (
     <section className="relative w-[80%]">
+      <FileShareInMessage
+        handleCancelFileSharing={handleClearFileData}
+        handleFileSharing={handleFileSharing}
+      />
       <MessageHeader user={receiverUser as unknown as IUser} />
-      <Users users={conversations}>
+
+      <Users users={conversations} onClickFn={navigateToConversation}>
         <div className="p-6 flex items-baseline justify-between">
           <h2 className="text-2xl px-4">Conversations</h2>
           <a className="cursor-pointer">
@@ -289,6 +389,7 @@ export function Messages() {
           </a>
         </div>
       </Users>
+
       {isLoading && (
         <div className="absolute top-[50%] left-[58%] bg-slate-800 text-white px-3 py-1 rounded z-50 flex items-center">
           <div className="size-5 border-4 border-blue-500 border-t-transparent rounded-full animate-spin "></div>
@@ -348,12 +449,20 @@ export function Messages() {
                         }
                       >
                         {/* Used this component to show "Show more" button if message is too long */}
-                        <RenderMessageContent
-                          key={`content-${message.id}`}
-                          content={message.body}
-                          index={index}
-                          message={message}
-                        />
+                        {message.messageType === "text" ? (
+                          <RenderMessageContent
+                            key={`content-${message.id}`}
+                            content={message.body}
+                            index={index}
+                            message={message}
+                          />
+                        ) : (
+                          <PreviewFiles
+                            classes="border border-solid p-2 scrollbar-none size-[12rem]"
+                            fileUrl={message.body}
+                            fileExtenstion={message.messageType}
+                          />
+                        )}
                       </span>
                       {Number(id) === message.ownerId && (
                         <a className="ml-2">
@@ -370,7 +479,7 @@ export function Messages() {
           {conversationId && (
             <div className="fixed bottom-4 w-[50%] flex mt-[40px]">
               <div
-                className={`w-[100%] bg-red-50 rounded-3xl max-h-32 border-2 py-1 h-[60px] flex items-end justify-around ${
+                className={`w-[100%] bg-red-50 rounded-3xl max-h-52 border-2 py-1 flex items-end justify-around ${
                   isEditingMsg && "animate-blink-border"
                 }`}
                 ref={textareaWrapperRef}
@@ -380,6 +489,8 @@ export function Messages() {
                     onFileChange={handleFileChange}
                     id="file-change-message"
                     icon={<LinkIcon stroke={2} className="size-6" />}
+                    multiple={true}
+                    ref={fileInputRef}
                   />
                 </div>
 
@@ -388,7 +499,7 @@ export function Messages() {
                   onKeyDown={handleKeyDown}
                   value={currentMsg}
                   onChange={handleChangeInput}
-                  className={`w-[80%] py-4 pl-2 pr-[10%] h-[54px] max-h-32 outline-none overflow-auto scrollbar-none resize-none bg-transparent
+                  className={`w-[80%] py-4 pl-2 pr-[10%] h-[50px] max-h-32 outline-none overflow-auto scrollbar-none resize-none bg-transparent
                   }`}
                   ref={textareaRef}
                   rows={1}
@@ -408,7 +519,7 @@ export function Messages() {
                 )}
                 <button
                   disabled={!currentMsg || !currentMsg.trim()}
-                  className="rounded-2xl"
+                  className="rounded-2xl mb-[2.5px]"
                   onClick={onSubmit}
                 >
                   <SendIcon />

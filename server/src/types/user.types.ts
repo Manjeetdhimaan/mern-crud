@@ -36,4 +36,12 @@ declare interface ICountRow {
   count: number;
 }
 
-export { IUser, IUserWithoutPassword, ICountRow, IUserWithRole }
+declare interface IMessage {
+  body: string,
+  ownerId: number,
+  conversationId: string,
+  messageType: string,
+  id: number,
+}
+
+export { IUser, IUserWithoutPassword, ICountRow, IUserWithRole, IMessage }

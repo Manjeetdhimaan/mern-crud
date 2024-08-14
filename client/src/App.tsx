@@ -72,6 +72,10 @@ export default App;
 // # Replace fetch function with axios in signup.
 // # Auto reload previous messages when reached top of container.
 // # Update database tables with correct spellings of values inside them.
+// # Remove any from multer
+// # Error handling in message sending and show spinner while sending files.
+// # Add option to preview and download files.
+// # Show error message when user selects a larger file in messages
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE

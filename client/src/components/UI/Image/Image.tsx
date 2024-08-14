@@ -5,7 +5,7 @@ import { ImageWithFallbackProps } from '../../../models/ui.model';
 const Image: React.FC<ImageWithFallbackProps> = ({
   src,
   alt,
-  defaultSrc,
+  defaultSrc = '/vite.svg',
   className,
 }) => {
   const [imgSrc, setImgSrc] = useState<string>(src);

@@ -1,7 +1,8 @@
 import express, { NextFunction, Response } from "express";
 
-import MessageController from "../controllers/messages.controller";
 import JwtHelper from "../middlewares/jwt-helper";
+import extractFile from "../middlewares/file-upload";
+import MessageController from "../controllers/messages.controller";
 import { IRequest } from "../types/common.types";
 
 const router = express.Router();
@@ -11,6 +12,7 @@ const verifyJwtToken = new JwtHelper().verifyJwtToken as TVerifyToken;
 router.post('/start', verifyJwtToken, messageCtrl.startConversation);
 router.get('/conversations', verifyJwtToken, messageCtrl.getConversations);
 router.get('/get-messages', verifyJwtToken, messageCtrl.getMessages);
+router.post('/private-message', verifyJwtToken, extractFile.single('file'), messageCtrl.privateMessageWithFiles);
 
 export type TVerifyToken = (req: IRequest, res: Response, next: NextFunction) => Promise<Response | void>;
 export default router;

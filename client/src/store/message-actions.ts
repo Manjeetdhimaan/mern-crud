@@ -1,14 +1,15 @@
 import { Dispatch } from "@reduxjs/toolkit";
 
-import http from "../util/http";
+import http from "../services/http/http.service";
 import { getUserEmail } from "../util/auth";
 import { IUser } from "../models/user.model";
 import { messageActions } from "./message-slice";
 import { Conversation } from "../models/conversation.model";
+import { messageBaseUrl } from "../constants/local.constants";
 
-const messageBaseUrl = "/messages";
 
-export const fetchConversations = (senderId: number): any => {
+
+const fetchConversations = (senderId: number): any => {
   return async (dispatch: Dispatch): Promise<void> => {
     const fetchData = async () => {
       const response = await http.get(`${messageBaseUrl}/conversations`, {
@@ -58,7 +59,7 @@ export const fetchConversations = (senderId: number): any => {
   };
 };
 
-export const fetchMessages = (conversationId: string): any => {
+const fetchMessages = (conversationId: string): any => {
   return async (dispatch: Dispatch): Promise<void> => {
     const fetchData = async () => {
       const response = await http.get(`${messageBaseUrl}/get-messages`, {
@@ -110,7 +111,7 @@ export const fetchMessages = (conversationId: string): any => {
   };
 };
 
-export const fetchPreviousMessages = (
+const fetchPreviousMessages = (
   conversationId: string,
   page: number
 ): any => {
@@ -141,3 +142,6 @@ export const fetchPreviousMessages = (
     } catch (error) {}
   };
 };
+
+
+export {fetchConversations, fetchMessages, fetchPreviousMessages}
