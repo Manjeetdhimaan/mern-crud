@@ -73,6 +73,7 @@ export default App;
 // # Replace fetch function with axios in signup.
 // # Update database tables with correct spellings of values inside them.
 // # Auto reload previous messages when reached top of container. - not important
+// # Bug - Id is not getting attached while sending new file without reloading 
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE

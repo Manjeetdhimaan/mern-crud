@@ -2,19 +2,23 @@ import { useDispatch, useSelector } from "react-redux";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import Users from "../../components/Users/Users";
+import Spinner from "../../components/UI/Spinner/Spinner";
+import PreviewFile, { downloadFile } from "../../components/Message/PreviewFile";
 import PopupMenu from "../../components/UI/PopupMenu/PopupMenu";
 import messageService from "../../services/http/message.service";
 import FileInput from "../../components/UI/FileChange/FileChange";
 import MessageHeader from "../../components/Message/MessageHeader";
+import FileShareInMessage from "../../components/Message/FileShare";
 import RenderMessageDate from "../../components/Message/RenderMessageDate";
 import LoadPreviousMessages from "../../components/Message/LoadPreviousMessages";
 import RenderMessageContent from "../../components/Message/RenderMessageContent";
 import {
-  DeleteIcon,
   EditIcon,
   LinkIcon,
   PlusIcon,
   SendIcon,
+  DeleteIcon,
+  DownloadIcon,
 } from "../../components/UI/Icons/Icons";
 import { IUser } from "../../models/user.model";
 import { IMessage } from "../../models/message.model";
@@ -42,11 +46,7 @@ import {
 } from "../../store/message-actions";
 import { RootState } from "../../store";
 import { messageActions } from "../../store/message-slice";
-import FileShareInMessage, {
-  PreviewFiles,
-} from "../../components/Message/FileShare";
 import { maxFileSizeInMB } from "../../constants/files.constants";
-import Spinner from "../../components/UI/Spinner/Spinner";
 
 let counter = 0;
 
@@ -99,6 +99,7 @@ export function Messages() {
     onEditPrivateMessage(dispatch);
     onDeletePrivateMessage(dispatch);
     onDisconnect();
+
     return () => {
       offPrivateMsg();
       offEditPrivateMsg();
@@ -132,6 +133,7 @@ export function Messages() {
     setCurrentMsg("");
     handleClearFileData();
     setConversationId(String(conversationId));
+    scrolltoBottom(false);
   }, [dispatch, conversationId]);
 
   useEffect(() => {
@@ -141,19 +143,21 @@ export function Messages() {
   }, [page]);
 
   useEffect(() => {
-    setTimeout(() => {
-      if (messageWrapper.current && !loadingPreviousMsgs) {
-        const maxScroll = messageWrapper.current.scrollHeight;
-        messageWrapper.current.scrollTo({
-          top: maxScroll,
-          behavior: counter === 0 ? "instant" : "smooth",
-        });
-        if (counter === 0) {
-          counter++;
-        }
-      }
-    });
+    scrolltoBottom(true);
   }, [messages.length]);
+
+  const scrolltoBottom = (increaseCounter: boolean) => {
+    if (messageWrapper.current && !loadingPreviousMsgs) {
+      const maxScroll = messageWrapper.current.scrollHeight;
+      messageWrapper.current.scrollTo({
+        top: maxScroll,
+        behavior: counter === 0 ? "instant" : "smooth",
+      });
+      if (counter === 0 && increaseCounter) {
+        counter++;
+      }
+    }
+  }
 
   const onLoadPreviousMsgs = (): void => {
     dispatch(
@@ -228,32 +232,6 @@ export function Messages() {
     handleInput();
   };
 
-  const handleDeleteMsg = (messageId: number): void => {
-    // ask for confirmation
-    emitDeletePrivateMsg(messageId, String(conversationId));
-    handleCancelEdit();
-  };
-
-  const handleMenuClick = <T extends unknown>(
-    label: string,
-    message?: T
-  ): void => {
-    const msg = message as IMessage;
-    switch (label) {
-      case "Edit":
-        onEditPrivateMsg(msg.body, msg.id);
-        break;
-
-      case "Delete":
-        setLoadingPreviousMsgs(true);
-        handleDeleteMsg(msg.id);
-        break;
-
-      default:
-        break;
-    }
-  };
-
   const navigateToConversation = <T extends unknown>(cnvsId: T): void => {
     if (conversationId === cnvsId) {
       return;
@@ -268,13 +246,6 @@ export function Messages() {
         if (textareaRef.current.scrollHeight > 50) {
           textareaRef.current.style.height = "auto"; // Reset height
           textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Set new height
-          // textareaWrapperRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-          // if (+textareaWrapperRef.current.style.height.slice(0, -2) === 56) {
-          //   textareaWrapperRef.current.style.height = `${60}px`;
-          // }
-          // if (+textareaRef.current.style.height.slice(0, -2) >= 80) {
-          //   textareaRef.current.style.height = `${80}px`; // Set new height
-          // }
           if (+textareaRef.current.style.height.slice(0, -2) === 56) {
             textareaRef.current.style.height = `${50}px`; // Set new height
           }
@@ -330,26 +301,24 @@ export function Messages() {
     // handle file sharing, create api on backend to handle files
     if (files) {
       setIsSendingFiles(true);
-      const filesLength = files.length;
-      for (let i = 0; i < filesLength; i++) {
-        const formData = new FormData();
-        const fileName = files[i].name;
-        const lastDotIndex = fileName.lastIndexOf(".");
-        const extenstion = fileName.substring(lastDotIndex);
-        formData.append("file", files[i]);
-        formData.append("ownerId", String(id));
-        formData.append("conversationId", String(conversationId));
-        formData.append("messageType", extenstion);
-        (await messageService.sendMessageWithFiles(formData)) as unknown as {
-          message: IMessage;
-        };
-        if (messageWrapper.current && !loadingPreviousMsgs) {
-          const maxScroll = messageWrapper.current.scrollHeight;
-          messageWrapper.current.scrollTo({
-            top: maxScroll,
-            behavior: counter === 0 ? "instant" : "smooth",
-          });
+      for await (const file of files) {
+        try {
+          const formData = new FormData();
+          const fileName = file.name;
+          const lastDotIndex = fileName.lastIndexOf(".");
+          const extenstion = fileName.substring(lastDotIndex);
+          formData.append("file", file);
+          formData.append("ownerId", String(id));
+          formData.append("conversationId", String(conversationId));
+          formData.append("messageType", extenstion);
+          await messageService.sendMessageWithFiles(formData);
+          scrolltoBottom(true);
+        } catch (error) {
+          // Need to handle api error or failure;
+          setIsSendingFiles(false);
+          console.log(error);
         }
+
       }
       setIsSendingFiles(false);
     }
@@ -366,11 +335,54 @@ export function Messages() {
     dispatch(messageActions.setModelIsOpen(false));
   };
 
-  const menuItems: IMenuItem[] = [
+  const handleDownLoadFile = <T extends unknown>(_: string, fileUrl: T) => {
+    downloadFile(fileUrl as string, fileUrl as string);
+  }
+
+  const handleDeleteMsg = (messageId: number): void => {
+    // ask for confirmation
+    emitDeletePrivateMsg(messageId, String(conversationId));
+    handleCancelEdit();
+  };
+
+  const handleMenuClick = <T extends unknown>(
+    label: string,
+    message?: T
+  ): void => {
+    const msg = message as IMessage;
+    switch (label) {
+      case "Edit":
+        onEditPrivateMsg(msg.body, msg.id);
+        break;
+
+      case "Delete":
+        setLoadingPreviousMsgs(true);
+        handleDeleteMsg(msg.id);
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  const menuItemsForText: IMenuItem[] = [
     {
       label: "Edit",
       icon: <EditIcon />,
       onClick: handleMenuClick,
+    },
+    {
+      label: "Delete",
+      icon: <DeleteIcon />,
+      onClick: handleMenuClick,
+    },
+  ];
+
+  const menuItemsForFiles: IMenuItem[] = [
+    {
+      label: "Download",
+      onClick: handleDownLoadFile,
+      icon: <DownloadIcon />,
     },
     {
       label: "Delete",
@@ -452,8 +464,8 @@ export function Messages() {
                       <span
                         className={
                           Number(id) === message.ownerId
-                            ? `bg-gray-700 ${messageClasses}`
-                            : `bg-slate-500 ${messageClasses}`
+                            ? `${message.messageType === "text" ? "bg-gray-700" : "text-black"} ${messageClasses}`
+                            : `${message.messageType === "text" ? "bg-slate-500" : "text-black"} ${messageClasses}`
                         }
                       >
                         {/* Used this component to show "Show more" button if message is too long */}
@@ -465,16 +477,18 @@ export function Messages() {
                             message={message}
                           />
                         ) : (
-                          <PreviewFiles
+                          // Render files
+                          <PreviewFile
                             classes="border border-solid p-2 scrollbar-none size-[12rem]"
                             fileUrl={message.body}
                             fileExtenstion={message.messageType}
+                            showDownloadLink={Number(message.ownerId) !== Number(id)}
                           />
                         )}
                       </span>
                       {Number(id) === message.ownerId && (
                         <a className="ml-2">
-                          <PopupMenu items={menuItems} data={message} />
+                          <PopupMenu items={message.messageType === "text" ? menuItemsForText : menuItemsForFiles} data={message.messageType === "text" ? message : message.body} />
                         </a>
                       )}
                     </div>
@@ -482,19 +496,18 @@ export function Messages() {
                 ))}
               </>
             }
-          
+
           </div>
           {isSendingFiles && (
-              <div className="w-[50%] flex justify-end">
-                <Spinner />
-              </div>
-            )}
+            <div className="w-[50%] flex justify-end">
+              <Spinner />
+            </div>
+          )}
           {conversationId && (
             <div className="fixed bottom-4 w-[50%] flex mt-[40px]">
               <div
-                className={`w-[100%] bg-red-50 rounded-3xl max-h-52 border-2 py-1 flex items-end justify-around ${
-                  isEditingMsg && "animate-blink-border"
-                }`}
+                className={`w-[100%] bg-red-50 rounded-3xl max-h-52 border-2 py-1 flex items-end justify-around ${isEditingMsg && "animate-blink-border"
+                  }`}
                 ref={textareaWrapperRef}
               >
                 <div className="ml-[18px] min-h-[38px]">
@@ -512,7 +525,7 @@ export function Messages() {
                   onKeyDown={handleKeyDown}
                   value={currentMsg}
                   onChange={handleChangeInput}
-                  className={`w-[80%] py-4 pl-2 pr-[10%] h-[50px] max-h-32 outline-none overflow-auto scrollbar-none resize-none bg-transparent
+                  className={`w-[80%] py-3 pl-2 mr-[10%] h-[50px] max-h-32 outline-none overflow-auto scrollbar-none resize-none bg-transparent
                   }`}
                   ref={textareaRef}
                   rows={1}
@@ -532,7 +545,7 @@ export function Messages() {
                 )}
                 <button
                   disabled={!currentMsg || !currentMsg.trim()}
-                  className="rounded-2xl mb-[2.5px]"
+                  className="rounded-2xl mb-[2.5px] mr-2"
                   onClick={onSubmit}
                 >
                   <SendIcon />

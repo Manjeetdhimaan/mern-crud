@@ -1,4 +1,4 @@
-export const MIME_TYPE_MAP: {[key: string]: string} = {
+export const MIME_TYPE_MAP: { [key: string]: string } = {
     "image/jpeg": "jpg",
     "image/png": "png",
     "image/gif": "gif",
@@ -14,7 +14,9 @@ export const MIME_TYPE_MAP: {[key: string]: string} = {
     "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
     "text/plain": "txt",
     "application/zip": "zip",
+    "application/x-zip-compressed": "zip",
     "application/x-rar-compressed": "rar",
+    "application/vnd.rar": "rar",
     "application/x-tar": "tar",
     "application/x-7z-compressed": "7z",
     "application/x-gzip": "gz",

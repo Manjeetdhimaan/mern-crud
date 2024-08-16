@@ -30,7 +30,7 @@ export function onDisconnect() {
         console.log('Trying to reconnect...')
         socketInit();
         if (conversationId) emitRoom(conversationId);
-      }, 3000);
+      }, 5000);
     } else {
       if (timer) clearTimeout(timer);
     }
@@ -38,7 +38,7 @@ export function onDisconnect() {
 }
 
 export function emitRoom(cnvsId: string): void {
-  socket.emit(JOIN, { conversationId: cnvsId });
+  if(cnvsId) socket.emit(JOIN, { conversationId: cnvsId });
 }
 
 export function socketInit(): void {
