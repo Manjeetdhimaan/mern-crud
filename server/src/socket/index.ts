@@ -13,6 +13,7 @@ import {
   PRIVATE_MESSAGE,
 } from "../constants/sockets.constants";
 import { IMessage } from "../types/user.types";
+import { getCurrentUTCDate } from "../utils/common";
 
 let chatNamseSpace: Namespace;
 
@@ -38,9 +39,11 @@ export default class Socket {
       console.log("User connected with ID: ", socket.id);
 
       socket.on(JOIN, ({ conversationId }) => {
-        console.log("User joined room with ID: ", conversationId);
-        room = "room-" + conversationId;
-        socket.join(room);
+        if (conversationId) {
+          console.log("User joined room with ID: ", conversationId);
+          room = "room-" + conversationId;
+          socket.join(room);
+        }
       });
 
       // send/receive private message
@@ -63,6 +66,7 @@ export default class Socket {
             ownerId,
             conversationId,
             messageType,
+            createdAt: getCurrentUTCDate(),
             id: response.insertId,
           });
         }

@@ -3,7 +3,6 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import Users from "../../components/Users/Users";
 import Spinner from "../../components/UI/Spinner/Spinner";
-import PreviewFile, { downloadFile } from "../../components/Message/PreviewFile";
 import PopupMenu from "../../components/UI/PopupMenu/PopupMenu";
 import messageService from "../../services/http/message.service";
 import FileInput from "../../components/UI/FileChange/FileChange";
@@ -12,6 +11,7 @@ import FileShareInMessage from "../../components/Message/FileShare";
 import RenderMessageDate from "../../components/Message/RenderMessageDate";
 import LoadPreviousMessages from "../../components/Message/LoadPreviousMessages";
 import RenderMessageContent from "../../components/Message/RenderMessageContent";
+import PreviewFile, { downloadFile } from "../../components/Message/PreviewFile";
 import {
   EditIcon,
   LinkIcon,
@@ -43,10 +43,11 @@ import {
   fetchConversations,
   fetchMessages,
   fetchPreviousMessages,
-} from "../../store/message-actions";
+} from "../../store/message/message-actions";
 import { RootState } from "../../store";
-import { messageActions } from "../../store/message-slice";
+import { messageActions } from "../../store/message/message-slice";
 import { maxFileSizeInMB } from "../../constants/files.constants";
+import snackbarService from "../../store/ui/snackbar/snackbar-actions";
 
 let counter = 0;
 
@@ -125,14 +126,14 @@ export function Messages() {
         })
       );
       dispatch(fetchMessages(String(conversationId)));
+      emitRoom(String(conversationId));
+      setConversationId(String(conversationId));
     }
     dispatch(messageActions.setPage({ page: 1 }));
-    emitRoom(String(conversationId));
     setLoadingPreviousMsgs(false);
     handleCancelEdit();
     setCurrentMsg("");
     handleClearFileData();
-    setConversationId(String(conversationId));
     scrolltoBottom(false);
   }, [dispatch, conversationId]);
 
@@ -268,6 +269,7 @@ export function Messages() {
 
         if (fileSizeInMB >= maxFileSizeInMB) {
           // Display an error message or handle the oversized file as per your requirement
+          snackbarService.error(`Maximum Image size can be ${maxFileSizeInMB} MB`);
           console.error(`Maximum Image size can be ${maxFileSizeInMB} MB`);
           if (files.length === 1) {
             handleClearFileData();
@@ -335,7 +337,8 @@ export function Messages() {
     dispatch(messageActions.setModelIsOpen(false));
   };
 
-  const handleDownLoadFile = <T extends unknown>(_: string, fileUrl: T) => {
+  const handleDownLoadFile = <T extends unknown>(_: string, message: T) => {
+    const fileUrl = (message as IMessage).body;
     downloadFile(fileUrl as string, fileUrl as string);
   }
 
@@ -464,8 +467,8 @@ export function Messages() {
                       <span
                         className={
                           Number(id) === message.ownerId
-                            ? `${message.messageType === "text" ? "bg-gray-700" : "text-black"} ${messageClasses}`
-                            : `${message.messageType === "text" ? "bg-slate-500" : "text-black"} ${messageClasses}`
+                            ? `${messageClasses} ${message.messageType === "text" ? "bg-gray-700" : "!text-black"}`
+                            : `${messageClasses} ${message.messageType === "text" ? "bg-slate-500" : "!text-black"}`
                         }
                       >
                         {/* Used this component to show "Show more" button if message is too long */}
@@ -488,7 +491,7 @@ export function Messages() {
                       </span>
                       {Number(id) === message.ownerId && (
                         <a className="ml-2">
-                          <PopupMenu items={message.messageType === "text" ? menuItemsForText : menuItemsForFiles} data={message.messageType === "text" ? message : message.body} />
+                          <PopupMenu items={message.messageType === "text" ? menuItemsForText : menuItemsForFiles} data={message} />
                         </a>
                       )}
                     </div>
@@ -536,7 +539,7 @@ export function Messages() {
                       Editing Message
                     </small>
                     <a
-                      className="rounded-2xl cursor-pointer text-red-600 whitespace-nowrap mr-[5px] mb-[12px]"
+                      className="rounded-2xl cursor-pointer text-red-600 whitespace-nowrap mr-[5px] mb-[16px]"
                       onClick={handleCancelEdit}
                     >
                       Cancel editing

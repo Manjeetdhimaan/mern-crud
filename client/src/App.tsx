@@ -1,13 +1,18 @@
+import { useDispatch, useSelector } from 'react-redux';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import './App.css';
 import Login from './pages/Auth/Login';
 import Signup from './pages/Auth/Signup';
 import Layout from './components/Layout/Layout';
+import Snackbar from './components/UI/Snackbar/Snackbar';
+
 import { getUserId, tokenLoader } from './util/auth';
 import { Messages } from './pages/Messages/Messages';
 import { action as signUpAction } from './pages/Auth/Signup';
 import { action as logoutAction } from './pages/Logout/Logout';
+import { RootState } from './store';
+import { closeSnackbar } from './store/ui/snackbar/snackbar-slice';
 
 const router = createBrowserRouter([
   {
@@ -48,8 +53,13 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  const dispatch = useDispatch();
+  const { message, type, isOpen, duration } = useSelector((state: RootState) => state.snackbar);
   return (
     <>
+      {isOpen && message && type && (
+        <Snackbar message={message} type={type} duration={duration} onClose={() => dispatch(closeSnackbar())} />
+      )}
       <RouterProvider router={router} />
     </>
   )
@@ -57,8 +67,7 @@ function App() {
 
 export default App;
 
-// TO DO: 
-// # Error handling in message sending and show spinner while sending files.
+// TO DO:
 // # Add option to preview and download files.
 // # Show error message when user selects a larger file in messages
 // # Dont show edit option on files in chat
@@ -73,7 +82,9 @@ export default App;
 // # Replace fetch function with axios in signup.
 // # Update database tables with correct spellings of values inside them.
 // # Auto reload previous messages when reached top of container. - not important
-// # Bug - Id is not getting attached while sending new file without reloading 
+// # Validation on backend to edit and delete message only by owner
+// # Show which user has sent the message in chat.
+// Show last message sent in every conversation in left section.
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE
@@ -89,3 +100,5 @@ export default App;
 // # send files in chat. - DONE
 // # Create custom hook to make http requests. - DONE
 // # Remove any from multer - DONE
+// # Bug - Id is not getting attached while sending new file without reloading - DONE
+// # Error handling in message sending and show spinner while sending files. - DONE

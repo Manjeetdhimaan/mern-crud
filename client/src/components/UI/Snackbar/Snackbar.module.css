@@ -1,0 +1,31 @@
+.snackbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 16px;
+    color: #fff;
+    border-radius: 4px;
+    min-width: 200px;
+    text-align: center;
+    font-size: 16px;
+    z-index: 9999;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  .snackbar-success {
+    background-color: #4caf50;
+  }
+  
+  .snackbar-error {
+    background-color: #f44336;
+  }
+  
+  .snackbar-info {
+    background-color: #2196f3;
+  }
+  
+  .snackbar-warning {
+    background-color: #ff9800;
+  }
+  

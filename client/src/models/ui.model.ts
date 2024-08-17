@@ -24,3 +24,10 @@ export interface FileInputProps {
   icon: React.ReactNode;
   multiple?: boolean
 }
+
+export interface ISnackbarProps {
+  message: string;
+  type: 'success' | 'info' | 'warning' | 'error';
+  duration?: number;
+  onClose: () => void;
+};

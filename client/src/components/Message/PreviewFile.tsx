@@ -1,3 +1,5 @@
+import { MouseEvent } from "react";
+
 import Image from "../UI/Image/Image";
 import { DocumentIcon } from "../UI/Icons/Icons";
 import { IFileBase64 } from "../../models/message.model";
@@ -65,10 +67,14 @@ const PreviewFile: React.FC<{
 export default PreviewFile;
 
 const DownloadLink: React.FC<{ fileUrl: string, fileName: string }> = ({ fileUrl, fileName }) => {
+    const handleLinkClick = async (event: MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
+        await downloadFile(fileUrl, fileName)
+    }
     return (
         <div className="text-center">
             <small>
-                <a href="#" onClick={async () => await downloadFile(fileUrl, fileName)} className="hover:underline">
+                <a href="#" onClick={handleLinkClick} className="hover:underline">
                     Download
                 </a>
             </small>

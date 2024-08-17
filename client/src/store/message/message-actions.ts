@@ -1,13 +1,11 @@
 import { Dispatch } from "@reduxjs/toolkit";
 
-import http from "../services/http/http.service";
-import { getUserEmail } from "../util/auth";
-import { IUser } from "../models/user.model";
+import http from "../../services/http/http.service";
+import { getUserEmail } from "../../util/auth";
+import { IUser } from "../../models/user.model";
 import { messageActions } from "./message-slice";
-import { Conversation } from "../models/conversation.model";
-import { messageBaseUrl } from "../constants/local.constants";
-
-
+import { Conversation } from "../../models/conversation.model";
+import { messageBaseUrl } from "../../constants/local.constants";
 
 const fetchConversations = (senderId: number): any => {
   return async (dispatch: Dispatch): Promise<void> => {

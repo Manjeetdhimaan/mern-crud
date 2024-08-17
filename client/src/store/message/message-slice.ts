@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { Conversation } from "../models/conversation.model";
-import { IMessage, IMessageInitialState } from "../models/message.model";
+import { Conversation } from "../../models/conversation.model";
+import { IMessage, IMessageInitialState } from "../../models/message.model";
 
 const initialState: IMessageInitialState = {
   page: 1,

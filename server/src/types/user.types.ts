@@ -36,7 +36,7 @@ declare interface ICountRow {
   count: number;
 }
 
-declare interface IMessage {
+declare interface IMessage extends ITimeStamp {
   body: string,
   ownerId: number,
   conversationId: string,

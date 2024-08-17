@@ -11,7 +11,7 @@ import {
   JOIN,
   PRIVATE_MESSAGE,
 } from "../../../constants/socket.constants";
-import { messageActions } from "../../../store/message-slice";
+import { messageActions } from "../../../store/message/message-slice";
 
 const socket = io(BASE_API_URL + "/chat");
 
@@ -38,7 +38,7 @@ export function onDisconnect() {
 }
 
 export function emitRoom(cnvsId: string): void {
-  if(cnvsId) socket.emit(JOIN, { conversationId: cnvsId });
+  if(cnvsId && cnvsId !== "undefined") socket.emit(JOIN, { conversationId: cnvsId });
 }
 
 export function socketInit(): void {
@@ -59,7 +59,7 @@ export function onPrivateMsg(
         body: newMessage.body,
         id: newMessage.id,
         messageType: newMessage.messageType,
-        createdAt: new Date().toISOString(),
+        // createdAt: new Date().toISOString(),
       };
       dispatch(
         messageActions.setMessagesOnAdd({
