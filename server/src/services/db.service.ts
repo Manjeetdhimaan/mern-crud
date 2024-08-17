@@ -222,16 +222,37 @@ export default class DatabaseService {
     updateKey: string,
     updateValue: T,
     whereKey: string,
-    whereValue: T
+    whereValue: T,
+    secondUpdateKey?: string,
+    secondUpdateValue?: T,
+    thirdUpdateKey?: string,
+    thirdUpdateValue?: T,
+    fourthUpdateKey?: string,
+    fourthUpdateValue?: T,
   ): Promise<QueryResult | Error> {
     return new Promise(async function (resolve, reject) {
       try {
-        // const whereType = typeof whereValue;
-        // const updateType = typeof updateValue;
-        // const wValue = whereType === 'string' || whereType === 'number' ? `${whereValue}` : whereValue;
-        // const uValue = typeof updateValue === 'string'  || updateType === 'number'  ? `${updateValue}` : updateValue;
-        const updateValueEscaped = (updateValue as string).replace(/'/g, "\\'");
-        const query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}' WHERE ${whereKey} = '${whereValue}'`;
+        const updateValueEscaped = typeof updateValue === "string" ? (updateValue as string).replace(/'/g, "\\'") : updateValue;
+        let query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}' WHERE ${whereKey} = '${whereValue}'`;
+
+        if (secondUpdateKey) {
+          const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'") : secondUpdateValue;
+          query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}', ${secondUpdateKey} = '${secondUpdateValueEscaped}'  WHERE ${whereKey} = '${whereValue}'`;
+        }
+
+        if (thirdUpdateKey) {
+          const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'") : secondUpdateValue;
+          const thirdUpdateValueEscaped = typeof thirdUpdateValue === "string" ? (thirdUpdateValue as string).replace(/'/g, "\\'") : thirdUpdateValue;
+          query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}', ${secondUpdateKey} = '${secondUpdateValueEscaped}', ${thirdUpdateKey} = '${thirdUpdateValueEscaped}'  WHERE ${whereKey} = '${whereValue}'`;
+        }
+
+        if (fourthUpdateKey) {
+          const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'") : secondUpdateValue;
+          const thirdUpdateValueEscaped = typeof thirdUpdateValue === "string" ? (thirdUpdateValue as string).replace(/'/g, "\\'") : thirdUpdateValue;
+          const fourthUpdateValueEscaped = typeof fourthUpdateValue === "string" ? (fourthUpdateValue as string).replace(/'/g, "\\'") : fourthUpdateValue;
+          query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}', ${secondUpdateKey} = '${secondUpdateValueEscaped}', ${thirdUpdateKey} = '${thirdUpdateValueEscaped}', ${fourthUpdateKey} = '${fourthUpdateValueEscaped}'  WHERE ${whereKey} = '${whereValue}'`;
+        }
+
         const [result] = await db.query(query);
         return resolve(result);
       } catch (error) {
@@ -239,6 +260,31 @@ export default class DatabaseService {
       }
     });
   }
+
+  // async updateMultiple<T>(
+  //   table: string,
+  //   updateKeyValues: {[key: string]: T}[],
+  //   whereKey: string,
+  //   whereValue: T,
+  // ): Promise<QueryResult | Error> {
+  //   return new Promise(async function (resolve, reject) {
+  //     try {
+
+
+  //       const updateValueEscaped = (updateValue as string).replace(/'/g, "\\'");
+  //       let query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}' WHERE ${whereKey} = '${whereValue}'`;
+  //       if (updateTwo) {
+  //         const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'"): secondUpdateValue;
+  //         query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}', ${secondUpdateKey} = '${secondUpdateValueEscaped}'  WHERE ${whereKey} = '${whereValue}'`;
+  //       }
+
+  //       const [result] = await db.query(query);
+  //       return resolve(result);
+  //     } catch (error) {
+  //       return reject(error);
+  //     }
+  //   });
+  // }
 
   streamData<T>(table: string, whereKey: string, whereValue: T, res: Response) {
     const extractedValue =

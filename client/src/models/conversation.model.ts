@@ -10,4 +10,10 @@ export interface Conversation {
     receivedById: number,
     startedById: number,
     conversationId: string
+    lastMessage: string,
+    lastMessageBy: number,
+    lastMessageType: string
+    conversationCreatedAt: string,
+    conversationUpdatedAt: string,
+    lastMessageCreatedAt: string
 }

@@ -41,7 +41,7 @@ const PreviewFile: React.FC<{
     } else if (fileUrl.includes("image/") || imageExtensions.includes(fileExtenstion as string)) {
         return (
             <div>
-                <Image className={classes} src={fileUrl} alt="file selcetd" />
+                <Image className={classes + " object-cover"} src={fileUrl} alt="file selcetd" />
                 {downloadLink}
             </div>
         );

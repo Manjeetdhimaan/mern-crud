@@ -10,8 +10,9 @@ const messageCtrl = new MessageController();
 const verifyJwtToken = new JwtHelper().verifyJwtToken as TVerifyToken;
 
 router.post('/start', verifyJwtToken, messageCtrl.startConversation);
-router.get('/conversations', verifyJwtToken, messageCtrl.getConversations);
 router.get('/get-messages', verifyJwtToken, messageCtrl.getMessages);
+router.get('/conversations', verifyJwtToken, messageCtrl.getConversations);
+// router.put('/update-last-message', verifyJwtToken, messageCtrl.updateLastMessageInConversation);
 router.post('/private-message', verifyJwtToken, extractFile.single('file'), messageCtrl.privateMessageWithFiles);
 
 export type TVerifyToken = (req: IRequest, res: Response, next: NextFunction) => Promise<Response | void>;

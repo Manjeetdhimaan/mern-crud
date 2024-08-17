@@ -9,9 +9,11 @@ import {
   TOKEN as localToken,
   EXPIRATION as localExpiration,
 } from "../../constants/local.constants";
+import { EyeCloseIcon, EyeIcon } from "../../components/UI/Icons/Icons";
 
 function Login() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>();
   const navigate = useNavigate();
   const inputClasses =
@@ -65,15 +67,21 @@ function Login() {
             required
           />
         </p>
-        <p>
+        <p className="flex relative">
           <input
             className={inputClasses}
             placeholder="Password"
             id="password"
-            type="password"
+            type={showPassword ? "text" :"password"}
             name="password"
             required
           />
+          {
+            <a className="absolute right-2 top-3 text-cyan-950" title={showPassword ? "Hide password" :"Show password"} onClick={() => setShowPassword((prev) => !prev)}>
+              {showPassword ? <EyeIcon /> : <EyeCloseIcon />}
+            </a>
+          }
+
         </p>
         <div className="flex items-center justify-between">
           <button className="" disabled={isSubmitting}>

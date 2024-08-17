@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import { Dispatch } from "@reduxjs/toolkit";
 
-import { IMessage } from "../../../models/message.model";
+import { ILastMessage, IMessage } from "../../../models/message.model";
 import { BASE_API_URL } from "../../../constants/local.constants";
 import {
   CONNECT,
@@ -9,6 +9,7 @@ import {
   DISCONNECT,
   EDIT_PRIVATE_MESSAGE,
   JOIN,
+  LAST_MESSAGE_CONVERSATION,
   PRIVATE_MESSAGE,
 } from "../../../constants/socket.constants";
 import { messageActions } from "../../../store/message/message-slice";
@@ -38,7 +39,7 @@ export function onDisconnect() {
 }
 
 export function emitRoom(cnvsId: string): void {
-  if(cnvsId && cnvsId !== "undefined") socket.emit(JOIN, { conversationId: cnvsId });
+  if (cnvsId && cnvsId !== "undefined") socket.emit(JOIN, { conversationId: cnvsId });
 }
 
 export function socketInit(): void {
@@ -51,7 +52,7 @@ export function onPrivateMsg(
   dispatch: Dispatch,
   messageWrapper: React.RefObject<HTMLDivElement>
 ): void {
-  socket.on(PRIVATE_MESSAGE, (newMessage) => {
+  socket.on(PRIVATE_MESSAGE, async (newMessage) => {
     if (location.pathname.includes(newMessage.conversationId)) {
       const message = {
         ...newMessage,
@@ -70,10 +71,19 @@ export function onPrivateMsg(
         const maxScroll = messageWrapper.current.scrollHeight;
         messageWrapper.current.scrollTo({ top: maxScroll, behavior: "auto" });
       }
+      const payload = {
+        conversationId: newMessage.conversationId,
+        lastMessageBy: newMessage.ownerId,
+        lastMessage: newMessage.body,
+        lastMessageType: newMessage.messageType,
+        lastMessageCreatedAt: new Date().toISOString().slice(0, 19).replace('T', ' ')
+      }
+      emitLastMessageInConversation(payload);
+      // await messageService.updateLastMessageInConversation(payload);
     } else {
       //show notification::
       new Notification(`New message from ${newMessage.fullName}`, {
-        body: newMessage.body,
+        body: newMessage.body
       });
     }
   });
@@ -89,12 +99,42 @@ export function emitPrivateMsg(
     body: currentMsg.trim(),
     ownerId: Number(ownerId),
     conversationId,
-    messageType,
+    messageType
+  });
+}
+
+export function emitLastMessageInConversation(
+  data: ILastMessage
+): void {
+  const payload = {
+    conversationId: data.conversationId,
+    lastMessageBy: data.lastMessageBy,
+    lastMessage: data.lastMessage,
+    lastMessageType: data.lastMessageType,
+    lastMessageCreatedAt: new Date(data.lastMessageCreatedAt)
+  }
+  socket.emit(LAST_MESSAGE_CONVERSATION, payload);
+}
+
+export function onLastMessageInConversation(
+  dispatch: Dispatch
+): void {
+  socket.on(LAST_MESSAGE_CONVERSATION, async (lastMessage) => {
+    // write logic to update last message.
+    dispatch(messageActions.setLastMessage(lastMessage));
   });
 }
 
 export function onEditPrivateMessage(dispatch: Dispatch): void {
   socket.on(EDIT_PRIVATE_MESSAGE, (newMessage) => {
+    const payload = {
+      conversationId: newMessage.conversationId,
+      lastMessageBy: newMessage.ownerId,
+      lastMessage: newMessage.body,
+      lastMessageType: newMessage.messageType,
+      lastMessageCreatedAt: new Date(newMessage.createdAt)
+    }
+    emitLastMessageInConversation(payload);
     if (location.pathname.includes(newMessage.conversationId)) {
       dispatch(
         messageActions.onEditMessage({
@@ -129,6 +169,12 @@ export function onDeletePrivateMessage(dispatch: Dispatch): void {
           messageId,
         })
       );
+
+      dispatch(messageActions.setTotalCount({
+        decreaseCount: true
+      }));
+
+      // emitLastMessageInConversation()
     } else {
       //show notification::
     }
@@ -155,4 +201,8 @@ export function offEditPrivateMsg(): void {
 
 export function offDeletePrivateMsg(): void {
   socket.off(DELETE_PRIVATE_MESSAGE);
+}
+
+export function offLastMessageInConversation(): void {
+  socket.off(LAST_MESSAGE_CONVERSATION);
 }

@@ -163,4 +163,25 @@ export default class MessageController {
       return next(error);
     }
   };
+
+  // updateLastMessageInConversation = async (
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction
+  // ): Promise<Response | void> => {
+  //   try {
+  //     const { conversationId, lastMessageBy, lastMessage, lastMessageType } = req.body;
+  //     await this.databaseService.update(CONVERSATIONS, "lastMessage", lastMessage, "id", conversationId, "lastMessageBy", lastMessageBy, "lastMessageType", lastMessageType);
+  //     return res
+  //       .status(200)
+  //       .json(
+  //         successAction(
+  //           null,
+  //           "Last messages updated successfully!"
+  //         )
+  //       );
+  //   } catch (error) {
+  //     return next(error);
+  //   }
+  // }
 }

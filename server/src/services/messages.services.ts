@@ -7,13 +7,17 @@ export default class MessageService {
     async getConversationWithJoinUsers<T>(table: string, whereKey: string, whereValue: T, orWhereKey: string, orWhereValue: T, fields = "*", getDeleted?: boolean): Promise<QueryResult | Error> {
         return new Promise(async function (resolve, reject) {
             try {
-                const extractedValue = typeof whereValue === 'string' ? `'${whereValue}'` : whereValue;
+                // const extractedValue = typeof whereValue === 'string' ? `'${whereValue}'` : whereValue;
                 const query = `
                 SELECT 
                     c.id AS conversationId,
                     c.title,
                     c.createdAt AS conversationCreatedAt,
                     c.updatedAt AS conversationUpdatedAt,
+                    c.lastMessageBy AS lastMessageBy,
+                    c.lastMessage AS lastMessage,
+                    c.lastMessageType AS lastMessageType,
+                    c.lastMessageCreatedAt AS lastMessageCreatedAt,
                     su.id AS startedById,
                     su.fullName AS startedByName,
                     su.email AS startedByEmail,

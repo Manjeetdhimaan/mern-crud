@@ -1,10 +1,15 @@
 CREATE TABLE IF NOT EXISTS Conversations (
     id CHAR(36) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
+    lastMessage TEXT,
+    lastMessageBy INT,
+    lastMessageType VARCHAR(255) NOT NULL DEFAULT 'text',
+    lastMessageCreatedAt VARCHAR(255),
     startedBy INT NOT NULL,
     recievedBy INT NOT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (startedBy) REFERENCES Users(id) ON DELETE CASCADE,
-    FOREIGN KEY (recievedBy) REFERENCES Users(id) ON DELETE CASCADE
+    FOREIGN KEY (recievedBy) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (lastMessageBy) REFERENCES Users(id) ON DELETE CASCADE
 )

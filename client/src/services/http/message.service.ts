@@ -12,6 +12,15 @@ class MessageService {
       return null;
     }
   }
+
+  async updateLastMessageInConversation<T>(data: T): Promise<IMessage | null> {
+    const response = await http.put(`${messageBaseUrl}/update-last-message`, data);
+    if (response && response.data) {
+      return response.data;
+    } else {
+      return null;
+    }
+  }
 }
 
 export default new MessageService();

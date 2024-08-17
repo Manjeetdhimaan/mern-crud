@@ -2,7 +2,7 @@ import { IncomingMessage, ServerResponse, Server as HttpServer } from "http";
 import { Namespace, Server as SocketServer } from "socket.io";
 
 import DatabaseService from "../services/db.service";
-import { MESSAGES } from "../utils/database-tables";
+import { CONVERSATIONS, MESSAGES } from "../utils/database-tables";
 import { ResultSetHeader } from "mysql2";
 import {
   CONNECTION,
@@ -10,10 +10,11 @@ import {
   DISCONNECT,
   EDIT_PRIVATE_MESSAGE,
   JOIN,
+  LAST_MESSAGE_CONVERSATION,
   PRIVATE_MESSAGE,
 } from "../constants/sockets.constants";
 import { IMessage } from "../types/user.types";
-import { getCurrentUTCDate } from "../utils/common";
+import { getCurrentUTCDate } from "../helpers/common";
 
 let chatNamseSpace: Namespace;
 
@@ -122,6 +123,20 @@ export default class Socket {
         }
       );
 
+      // update last message in conversation
+      socket.on(
+        LAST_MESSAGE_CONVERSATION,
+        async ({ conversationId, lastMessage, lastMessageBy, lastMessageType, lastMessageCreatedAt }) => {
+          const response = (await this.db.update(CONVERSATIONS, "lastMessage", lastMessage, "id", conversationId, "lastMessageBy", lastMessageBy, "lastMessageType", lastMessageType, "lastMessageCreatedAt", lastMessageCreatedAt
+          )) as ResultSetHeader;
+          if (response && response.affectedRows) {
+            chatNamseSpace.in(room).emit(LAST_MESSAGE_CONVERSATION, {
+              conversationId, lastMessage, lastMessageBy, lastMessageType, lastMessageCreatedAt
+            });
+          }
+        }
+      );
+
       socket.on(DISCONNECT, (reason) => {
         console.log("A user disconnected:, ", reason);
       });
@@ -137,5 +152,6 @@ export function emitFileShareMessage(data: IMessage) {
     conversationId: data.conversationId,
     messageType: data.messageType,
     id: data.id,
+    createdAt: data.createdAt
   });
 }

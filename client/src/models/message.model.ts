@@ -9,6 +9,14 @@ export interface IMessage {
   createdAt: string;
 }
 
+export interface ILastMessage {
+  conversationId: string,
+  lastMessageBy: number,
+  lastMessage: string,
+  lastMessageType: string,
+  lastMessageCreatedAt: Date | string
+}
+
 export interface IMessageInitialState {
   page: number;
   conversationId: string;

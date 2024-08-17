@@ -1,3 +1,5 @@
+import { ILastMessage } from "./message.model"
+
 export interface IUser {
     id: number | string,
     receiverId: number,
@@ -7,6 +9,8 @@ export interface IUser {
     createdAt: string,
     updatedAt: string,
     email: string,
+    lastMessage?: ILastMessage
+    userId?: number,
     // isCoversation: boolean,
     onClickFn: <T>(data?: T) => void
 }

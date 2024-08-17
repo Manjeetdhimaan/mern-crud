@@ -69,8 +69,6 @@ export default App;
 
 // TO DO:
 // # Add option to preview and download files.
-// # Show error message when user selects a larger file in messages
-// # Dont show edit option on files in chat
 // # Add user search feature / Only search users which are not in the list.
 // # navigate to /messages/:conversationID  whenever user clicked on any user name/email to start a new conversation.
 // # Handle form validation properly.
@@ -83,8 +81,8 @@ export default App;
 // # Update database tables with correct spellings of values inside them.
 // # Auto reload previous messages when reached top of container. - not important
 // # Validation on backend to edit and delete message only by owner
-// # Show which user has sent the message in chat.
-// Show last message sent in every conversation in left section.
+// # Create common service to store and fetch data from localstorage in ENCRYPTED form.
+// # Create common service to set and get document title and other meta data.
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE
@@ -102,3 +100,8 @@ export default App;
 // # Remove any from multer - DONE
 // # Bug - Id is not getting attached while sending new file without reloading - DONE
 // # Error handling in message sending and show spinner while sending files. - DONE
+// # Dont show edit option on files in chat - DONE
+// # Show error message when user selects a larger file in messages - DONE
+// # Show which user has sent the message in chat. - DONE
+// # Show last message sent in every conversation in left section. - DONE
+// # Sort conversations list based on last message received or sent. - DONE

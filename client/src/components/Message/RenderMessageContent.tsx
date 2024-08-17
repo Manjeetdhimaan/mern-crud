@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
+import RenderMessageTime from "./RenderMessageTime";
 import { IMessage } from "../../models/message.model";
-import { time } from "./RenderMessageDate";
 
 const RenderMessageContent: React.FC<{ content: string, index: number, message: IMessage }> = ({ content, index, message }) => {
     const [expanded, setExpanded] = useState<boolean[]>(new Array().fill(false));
@@ -18,7 +18,7 @@ const RenderMessageContent: React.FC<{ content: string, index: number, message: 
     const words = content?.split(' ');
     const classes = "text-blue-500 hover:underline focus:outline-none cursor-pointer";
 
-    const timeContent = <div className="float-right text-sm mt-[-15px] mb-[-4px] text-[#d6d6d6]"> <small>{time(new Date(message.createdAt))}</small></div>
+    // const timeContent = <div className="float-right text-sm mt-[-15px] mb-[-4px] text-[#d6d6d6]"> <small>{time(new Date(message.createdAt))}</small></div>
 
     if (words && words.length > maxWords && !expanded[index]) {
         const shortenedContent = words.slice(0, maxWords).join(' ');
@@ -35,7 +35,7 @@ const RenderMessageContent: React.FC<{ content: string, index: number, message: 
                         </a>
                     </small>
                 </div>
-                {timeContent}
+                <RenderMessageTime createdAt={message.createdAt} />
             </>
         );
     } else if (expanded[index]) {
@@ -52,13 +52,13 @@ const RenderMessageContent: React.FC<{ content: string, index: number, message: 
                     </a>
                 </small> */}
                 </div>
-                {timeContent}
+                <RenderMessageTime createdAt={message.createdAt} />
 
             </>
         );
     } else {
         return <><div className="mr-14">{content}</ div>
-            {timeContent}
+            <RenderMessageTime createdAt={message.createdAt} />
         </>;
     }
 }

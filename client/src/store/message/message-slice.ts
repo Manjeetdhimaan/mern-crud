@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { Conversation } from "../../models/conversation.model";
-import { IMessage, IMessageInitialState } from "../../models/message.model";
+import { ILastMessage, IMessage, IMessageInitialState } from "../../models/message.model";
+import { getCurrentUTCDate } from "../../util/common";
 
 const initialState: IMessageInitialState = {
   page: 1,
@@ -29,7 +30,12 @@ const messageSlice = createSlice({
     },
 
     setTotalCount(state, action) {
-      state.totalCount = action.payload.totalCount;
+      if (action.payload.decreaseCount) {
+        state.totalCount = state.totalCount--;
+      }
+      else {
+        state.totalCount = action.payload.totalCount;
+      }
     },
 
     setMessages(state, action) {
@@ -116,6 +122,23 @@ const messageSlice = createSlice({
 
     setModelIsOpen(state, action) {
       state.modelIsOpen = action.payload;
+    },
+
+    setLastMessage(state, action) {
+      const { conversationId, lastMessage, lastMessageBy, lastMessageType, lastMessageCreatedAt } = action.payload;
+      const conversation = state.conversations.find(cnvs => cnvs.id === conversationId);
+      if (conversation) {
+        const lastMessageData: ILastMessage = {
+          conversationId,
+          lastMessage,
+          lastMessageBy,
+          lastMessageType,
+          lastMessageCreatedAt
+        }
+        conversation.lastMessage = lastMessageData;
+        conversation.updatedAt = getCurrentUTCDate().toISOString();
+      }
+      state.conversations.sort((a, b) => new Date(String(b.lastMessage?.lastMessageCreatedAt)).getTime() - new Date(String(a.lastMessage?.lastMessageCreatedAt)).getTime());
     },
   },
 });

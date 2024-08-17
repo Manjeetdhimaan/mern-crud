@@ -15,7 +15,7 @@ const PopupMenu: React.FC<IPopupMenuProps> = ({ items, data }): React.ReactNode 
     setIsOpen((prev) => !prev);
   }, []);
 
-  useOutsideClick(menuRef, () => setIsOpen(false));
+  useOutsideClick(menuRef, buttonRef, () => setIsOpen(false));
 
   useEffect(() => {
     const updateMenuPosition = () => {

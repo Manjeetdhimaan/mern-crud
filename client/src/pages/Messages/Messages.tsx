@@ -21,19 +21,22 @@ import {
   DownloadIcon,
 } from "../../components/UI/Icons/Icons";
 import { IUser } from "../../models/user.model";
-import { IMessage } from "../../models/message.model";
+import { ILastMessage, IMessage } from "../../models/message.model";
 import { useLoaderData, useNavigate, useParams } from "react-router-dom";
 import {
   emitDeletePrivateMsg,
   emitEditPrivateMsg,
+  emitLastMessageInConversation,
   emitPrivateMsg,
   emitRoom,
   offDeletePrivateMsg,
   offEditPrivateMsg,
+  offLastMessageInConversation,
   offPrivateMsg,
   onDeletePrivateMessage,
   onDisconnect,
   onEditPrivateMessage,
+  onLastMessageInConversation,
   onPrivateMsg,
   setConversationId,
   socketInit,
@@ -48,6 +51,7 @@ import { RootState } from "../../store";
 import { messageActions } from "../../store/message/message-slice";
 import { maxFileSizeInMB } from "../../constants/files.constants";
 import snackbarService from "../../store/ui/snackbar/snackbar-actions";
+import RenderMessageTime from "../../components/Message/RenderMessageTime";
 
 let counter = 0;
 
@@ -90,7 +94,6 @@ export function Messages() {
   );
 
   const isLoading = useSelector((state: RootState) => state.message.isLoading);
-
   // Files sharing in message: Properties
 
   useEffect(() => {
@@ -99,12 +102,14 @@ export function Messages() {
     onPrivateMsg(dispatch, messageWrapper);
     onEditPrivateMessage(dispatch);
     onDeletePrivateMessage(dispatch);
+    onLastMessageInConversation(dispatch);
     onDisconnect();
 
     return () => {
       offPrivateMsg();
       offEditPrivateMsg();
       offDeletePrivateMsg();
+      offLastMessageInConversation();
     };
   }, []);
 
@@ -344,7 +349,17 @@ export function Messages() {
 
   const handleDeleteMsg = (messageId: number): void => {
     // ask for confirmation
+    const lastMessage = messages[messages.length - 2];
+    const payload: ILastMessage = {
+      conversationId: String(conversationId),
+      lastMessage: String(lastMessage.body),
+      lastMessageBy: Number(lastMessage.ownerId),
+      lastMessageType: String(lastMessage.messageType),
+      lastMessageCreatedAt: new Date(lastMessage.createdAt)
+
+    }
     emitDeletePrivateMsg(messageId, String(conversationId));
+    emitLastMessageInConversation(payload);
     handleCancelEdit();
   };
 
@@ -481,12 +496,16 @@ export function Messages() {
                           />
                         ) : (
                           // Render files
-                          <PreviewFile
-                            classes="border border-solid p-2 scrollbar-none size-[12rem]"
-                            fileUrl={message.body}
-                            fileExtenstion={message.messageType}
-                            showDownloadLink={Number(message.ownerId) !== Number(id)}
-                          />
+                          <>
+                            <PreviewFile
+                              classes="border border-solid p-2 scrollbar-none size-[12rem]"
+                              fileUrl={message.body}
+                              fileExtenstion={message.messageType}
+                              showDownloadLink={Number(message.ownerId) !== Number(id)}
+                            />
+                            <RenderMessageTime createdAt={message.createdAt} classes="mt-0 text-[#616060]" />
+                          </>
+
                         )}
                       </span>
                       {Number(id) === message.ownerId && (
@@ -539,7 +558,7 @@ export function Messages() {
                       Editing Message
                     </small>
                     <a
-                      className="rounded-2xl cursor-pointer text-red-600 whitespace-nowrap mr-[5px] mb-[16px]"
+                      className="rounded-2xl cursor-pointer text-red-600 whitespace-nowrap mr-[6px] mb-[15px]"
                       onClick={handleCancelEdit}
                     >
                       Cancel editing

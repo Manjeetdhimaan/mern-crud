@@ -31,10 +31,18 @@ const fetchConversations = (senderId: number): any => {
               receiverId: isSameUser
                 ? conversation.receivedById
                 : conversation.startedById,
+              lastMessage: {
+                lastMessage: conversation.lastMessage,
+                lastMessageBy: conversation.lastMessageBy,
+                lastMessageType: conversation.lastMessageType,
+                lastMessageCreatedAt: conversation.lastMessageCreatedAt
+              },
+              createdAt: conversation.conversationCreatedAt,
+              updatedAt: conversation.conversationUpdatedAt
             };
           }
         );
-        return updatedConversations;
+        return updatedConversations.sort((a: IUser, b: IUser) => new Date(String(b.lastMessage?.lastMessageCreatedAt)).getTime() - new Date(String(a.lastMessage?.lastMessageCreatedAt)).getTime());
       } else {
         return [];
       }
@@ -53,7 +61,7 @@ const fetchConversations = (senderId: number): any => {
           conversations,
         })
       );
-    } catch (error) {}
+    } catch (error) { }
   };
 };
 
@@ -137,9 +145,9 @@ const fetchPreviousMessages = (
           })
         );
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 };
 
 
-export {fetchConversations, fetchMessages, fetchPreviousMessages}
+export { fetchConversations, fetchMessages, fetchPreviousMessages }
