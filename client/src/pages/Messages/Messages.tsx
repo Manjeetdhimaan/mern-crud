@@ -349,17 +349,29 @@ export function Messages() {
 
   const handleDeleteMsg = (messageId: number): void => {
     // ask for confirmation
-    const lastMessage = messages[messages.length - 2];
-    const payload: ILastMessage = {
-      conversationId: String(conversationId),
-      lastMessage: String(lastMessage.body),
-      lastMessageBy: Number(lastMessage.ownerId),
-      lastMessageType: String(lastMessage.messageType),
-      lastMessageCreatedAt: new Date(lastMessage.createdAt)
-
-    }
     emitDeletePrivateMsg(messageId, String(conversationId));
-    emitLastMessageInConversation(payload);
+    const lastMessage = messages[messages.length - 2];
+    if (lastMessage) {
+      const payload: ILastMessage = {
+        conversationId: String(conversationId),
+        lastMessage: String(lastMessage.body),
+        lastMessageBy: Number(lastMessage.ownerId),
+        lastMessageType: String(lastMessage.messageType),
+        lastMessageCreatedAt: new Date(lastMessage.createdAt)
+      }
+      emitLastMessageInConversation(payload);
+    }
+    else {
+      const payload: ILastMessage = {
+        conversationId: String(conversationId),
+        lastMessage: String(""),
+        lastMessageBy: Number(id),
+        lastMessageType: String("text"),
+        lastMessageCreatedAt: new Date()
+      }
+      emitLastMessageInConversation(payload);
+    }
+
     handleCancelEdit();
   };
 

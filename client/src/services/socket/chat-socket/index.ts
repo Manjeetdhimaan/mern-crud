@@ -185,6 +185,7 @@ export function emitDeletePrivateMsg(
   messageId: number,
   conversationId: string
 ): void {
+  console.log(messageId)
   socket.emit(DELETE_PRIVATE_MESSAGE, {
     messageId,
     conversationId,
