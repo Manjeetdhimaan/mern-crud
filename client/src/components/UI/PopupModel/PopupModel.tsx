@@ -32,7 +32,7 @@ const Model: React.FC<{
   const modalRoot = document.getElementById("root-model") as HTMLElement;
   return createPortal(
     open && (
-      <dialog ref={dialog}>
+      <dialog ref={dialog} className="animate-scale">
         <div className="px-10 pt-5 sticky top-0 bg-white">
           <h2 className="text-xl">{title}</h2>
         </div>

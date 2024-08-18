@@ -1,42 +1,31 @@
 
-import { IMessage } from "../../models/message.model";
 import Hr from "../UI/HorizontalLine";
-
-const today = new Date().getDate();
-const getDateMonth = (date: string): string => {
-    const foundDate = new Date(date).getDate();
-    const foundMonth = new Date(date).getMonth();
-    const foundYear = new Date(date).getFullYear();
-    return `${foundDate}-${foundMonth}-${foundYear}`;
-}
-
-const getDate = (date: string): number => {
-    return new Date(date).getDate();
-}
+import { IMessage } from "../../models/message.model";
+import { getDate, getFormattedDate, getMediumDate, today } from "../../util/dates";
 
 const RenderMessageDate: React.FC<{ message: IMessage, index: number, messages: IMessage[] }> = ({ messages, message, index }) => {
     const date = new Date(message.createdAt);
     return (
         <span>
             {
-                ((index === 0 && today !== getDate(messages[index].createdAt) && messages[index - 1]) ||
-                    (today !== getDate(messages[index].createdAt) &&
+                ((index === 0 && today() !== getDate(messages[index].createdAt) && messages[index - 1]) ||
+                    (today() !== getDate(messages[index].createdAt) &&
                         messages[index - 1] &&
-                        getDateMonth(messages[index].createdAt) !==
-                        getDateMonth(messages[index - 1].createdAt))) &&
+                        getFormattedDate(messages[index].createdAt) !==
+                        getFormattedDate(messages[index - 1].createdAt))) &&
                 <div className="text-center py-5">
                     <Hr classes="mb-[-14px]" />
                     <span className="bg-white px-3" >
-                        {(date.getDate() > 9 ? date.getDate() : "0" + date.getDate()) + '-' + (date.getMonth() + 1 > 9 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1)) + '-' + (date.getFullYear())}
+                        {getMediumDate(date)}
                     </span>
                 </div>
             }
             {
-                ((today === getDate(messages[index].createdAt) &&
+                ((today() === getDate(messages[index].createdAt) &&
                     messages[index - 1] &&
-                    getDateMonth(messages[index].createdAt) !==
-                    getDateMonth(messages[index - 1].createdAt)) ||
-                    (today === getDate(messages[index].createdAt) && index === 0))
+                    getFormattedDate(messages[index].createdAt) !==
+                    getFormattedDate(messages[index - 1].createdAt)) ||
+                    (today() === getDate(messages[index].createdAt) && index === 0))
                 &&
                 <div className="text-center py-5" >
                     <Hr classes="mb-[-14px]" />

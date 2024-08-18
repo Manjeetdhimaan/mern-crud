@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import Image from "../UI/Image/Image";
 import { IUser } from "../../models/user.model";
 import { time } from "../Message/RenderMessageDate";
+import { getDate, getMediumDate, today } from "../../util/dates";
+
+const clampClasses = "overflow-hidden text-ellipsis whitespace-nowrap line-clamp-1 block";
 
 const User: React.FC<IUser> = ({ fullName, id, imgUrl, onClickFn, lastMessage, userId }) => {
 
@@ -29,7 +32,7 @@ const User: React.FC<IUser> = ({ fullName, id, imgUrl, onClickFn, lastMessage, u
     : ""
     }`;
 
-  const clampClasses = "overflow-hidden text-ellipsis whitespace-nowrap line-clamp-1 block"
+
   return (
     <div className="w-[100%] pl-[4px] ">
       <a className={classes + " relative"} onClick={() => onClickFn(String(id))}>
@@ -52,7 +55,16 @@ const User: React.FC<IUser> = ({ fullName, id, imgUrl, onClickFn, lastMessage, u
               }
               <span>: {lastMessage?.lastMessageType === "text" ? lastMessage?.lastMessage : 'Sent an attachment'}</span>
             </small>}
-          <small className="text-[10px] absolute right-2 text-[grey]">{time(new Date(String(lastMessage?.lastMessageCreatedAt)))}</small>
+          {
+            today() !== getDate(String(lastMessage?.lastMessageCreatedAt)) ?
+              <small className="text-[10px] absolute right-2 text-[grey]">
+                {
+                  getMediumDate(new Date(String(lastMessage?.lastMessageCreatedAt)))
+                }
+              </small>
+              :
+              <small className="text-[10px] absolute right-2 text-[grey]">{time(new Date(String(lastMessage?.lastMessageCreatedAt)))}</small>
+          }
         </div>
       </a>
     </div>

@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { Conversation } from "../../models/conversation.model";
 import { ILastMessage, IMessage, IMessageInitialState } from "../../models/message.model";
-import { getCurrentUTCDate } from "../../util/common";
+import { getCurrentUTCDate } from "../../util/dates";
 
 const initialState: IMessageInitialState = {
   page: 1,

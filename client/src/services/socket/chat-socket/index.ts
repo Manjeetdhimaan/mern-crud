@@ -13,6 +13,7 @@ import {
   PRIVATE_MESSAGE,
 } from "../../../constants/socket.constants";
 import { messageActions } from "../../../store/message/message-slice";
+import { getCurrentUTCDate } from "../../../util/dates";
 
 const socket = io(BASE_API_URL + "/chat");
 
@@ -22,7 +23,7 @@ export function setConversationId(cnvsId: string) {
   conversationId = cnvsId;
 }
 
-export function onDisconnect() {
+export function onDisconnect(): void {
   socket.on(DISCONNECT, (reason) => {
     console.log("A user disconnected:, ", reason);
     let timer;
@@ -37,6 +38,11 @@ export function onDisconnect() {
     }
   });
 }
+
+export function disconnect() {
+  socket.disconnect();
+}
+
 
 export function emitRoom(cnvsId: string): void {
   if (cnvsId && cnvsId !== "undefined") socket.emit(JOIN, { conversationId: cnvsId });
@@ -76,7 +82,7 @@ export function onPrivateMsg(
         lastMessageBy: newMessage.ownerId,
         lastMessage: newMessage.body,
         lastMessageType: newMessage.messageType,
-        lastMessageCreatedAt: new Date().toISOString().slice(0, 19).replace('T', ' ')
+        lastMessageCreatedAt: getCurrentUTCDate()
       }
       emitLastMessageInConversation(payload);
       // await messageService.updateLastMessageInConversation(payload);
@@ -127,14 +133,7 @@ export function onLastMessageInConversation(
 
 export function onEditPrivateMessage(dispatch: Dispatch): void {
   socket.on(EDIT_PRIVATE_MESSAGE, (newMessage) => {
-    const payload = {
-      conversationId: newMessage.conversationId,
-      lastMessageBy: newMessage.ownerId,
-      lastMessage: newMessage.body,
-      lastMessageType: newMessage.messageType,
-      lastMessageCreatedAt: new Date(newMessage.createdAt)
-    }
-    emitLastMessageInConversation(payload);
+
     if (location.pathname.includes(newMessage.conversationId)) {
       dispatch(
         messageActions.onEditMessage({
@@ -185,7 +184,6 @@ export function emitDeletePrivateMsg(
   messageId: number,
   conversationId: string
 ): void {
-  console.log(messageId)
   socket.emit(DELETE_PRIVATE_MESSAGE, {
     messageId,
     conversationId,

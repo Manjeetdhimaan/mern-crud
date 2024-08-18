@@ -127,12 +127,16 @@ export default class Socket {
       socket.on(
         LAST_MESSAGE_CONVERSATION,
         async ({ conversationId, lastMessage, lastMessageBy, lastMessageType, lastMessageCreatedAt }) => {
-          const response = (await this.db.update(CONVERSATIONS, "lastMessage", lastMessage, "id", conversationId, "lastMessageBy", lastMessageBy, "lastMessageType", lastMessageType, "lastMessageCreatedAt", lastMessageCreatedAt
-          )) as ResultSetHeader;
-          if (response && response.affectedRows) {
-            chatNamseSpace.in(room).emit(LAST_MESSAGE_CONVERSATION, {
-              conversationId, lastMessage, lastMessageBy, lastMessageType, lastMessageCreatedAt
-            });
+          try {
+            const response = (await this.db.update(CONVERSATIONS, "lastMessage", lastMessage, "id", conversationId, "lastMessageBy", lastMessageBy, "lastMessageType", lastMessageType, "lastMessageCreatedAt", lastMessageCreatedAt
+            )) as ResultSetHeader;
+            if (response && response.affectedRows) {
+              chatNamseSpace.in(room).emit(LAST_MESSAGE_CONVERSATION, {
+                conversationId, lastMessage, lastMessageBy, lastMessageType, lastMessageCreatedAt
+              });
+            }
+          } catch (error) {
+            console.log("Error=>",error)
           }
         }
       );

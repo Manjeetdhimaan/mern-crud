@@ -20,10 +20,10 @@ import {
   DeleteIcon,
   DownloadIcon,
 } from "../../components/UI/Icons/Icons";
-import { IUser } from "../../models/user.model";
 import { ILastMessage, IMessage } from "../../models/message.model";
 import { useLoaderData, useNavigate, useParams } from "react-router-dom";
 import {
+  disconnect,
   emitDeletePrivateMsg,
   emitEditPrivateMsg,
   emitLastMessageInConversation,
@@ -52,6 +52,7 @@ import { messageActions } from "../../store/message/message-slice";
 import { maxFileSizeInMB } from "../../constants/files.constants";
 import snackbarService from "../../store/ui/snackbar/snackbar-actions";
 import RenderMessageTime from "../../components/Message/RenderMessageTime";
+import { getCurrentUTCDate } from "../../util/dates";
 
 let counter = 0;
 
@@ -83,9 +84,7 @@ export function Messages() {
     (state: RootState) => state.message.messages
   );
   const page = useSelector((state: RootState) => state.message.page);
-  const receiverUser = useSelector(
-    (state: RootState) => state.message.receiverUser
-  );
+
   const totalCount = useSelector(
     (state: RootState) => state.message.totalCount
   );
@@ -98,6 +97,7 @@ export function Messages() {
 
   useEffect(() => {
     // Initialize socket.io::
+    console.log("socketInit")
     socketInit();
     onPrivateMsg(dispatch, messageWrapper);
     onEditPrivateMessage(dispatch);
@@ -106,6 +106,7 @@ export function Messages() {
     onDisconnect();
 
     return () => {
+      disconnect();
       offPrivateMsg();
       offEditPrivateMsg();
       offDeletePrivateMsg();
@@ -120,20 +121,22 @@ export function Messages() {
   useEffect(() => {
     if (conversationId) {
       counter = 0;
-      dispatch(
-        messageActions.setConversationId({
-          conversationId: conversationId,
-        })
-      );
-      dispatch(
-        messageActions.setReceiverUser({
-          conversations: conversations,
-        })
-      );
       dispatch(fetchMessages(String(conversationId)));
       emitRoom(String(conversationId));
-      setConversationId(String(conversationId));
     }
+    dispatch(
+      messageActions.setConversationId({
+        conversationId: conversationId,
+      })
+    );
+
+    setConversationId(String(conversationId));
+
+    dispatch(
+      messageActions.setReceiverUser({
+        conversations: conversations,
+      })
+    );
     dispatch(messageActions.setPage({ page: 1 }));
     setLoadingPreviousMsgs(false);
     handleCancelEdit();
@@ -214,6 +217,17 @@ export function Messages() {
           Number(id),
           String(conversationId)
         );
+        const newMsgIdx = messages.findIndex(msg => +msg.id === Number(newMsg.id));
+        if (newMsgIdx === messages.length - 1) {
+          const payload: ILastMessage = {
+            conversationId: String(conversationId),
+            lastMessageBy: Number(newMsg.ownerId),
+            lastMessage: newMsg.body,
+            lastMessageType: String(newMsg.messageType),
+            lastMessageCreatedAt: new Date(String(newMsg.createdAt))
+          }
+          emitLastMessageInConversation(payload);
+        }
         return newMsg as IMessage;
       });
 
@@ -367,9 +381,13 @@ export function Messages() {
         lastMessage: String(""),
         lastMessageBy: Number(id),
         lastMessageType: String("text"),
-        lastMessageCreatedAt: new Date()
+        lastMessageCreatedAt: getCurrentUTCDate() // sending UTC ( Universal time )
       }
       emitLastMessageInConversation(payload);
+    }
+
+    if(messages.length < 20) {
+      onLoadPreviousMsgs();
     }
 
     handleCancelEdit();
@@ -429,7 +447,7 @@ export function Messages() {
         handleCancelFileSharing={handleClearFileData}
         handleFileSharing={handleFileSharing}
       />
-      <MessageHeader user={receiverUser as unknown as IUser} />
+      <MessageHeader />
 
       <Users users={conversations} onClickFn={navigateToConversation}>
         <div className="p-6 flex items-baseline justify-between">
