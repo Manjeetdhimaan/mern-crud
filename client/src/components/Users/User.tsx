@@ -43,7 +43,7 @@ const User: React.FC<IUser> = ({ fullName, id, imgUrl, onClickFn, lastMessage, u
           className="mr-2 inline-block"
         />
         <div className="max-w-[65%]">
-          <p className={clampClasses}>{fullName}</p>
+          <p className={clampClasses} title={fullName}>{fullName}</p>
 
 
           {lastMessage?.lastMessage &&
@@ -51,10 +51,11 @@ const User: React.FC<IUser> = ({ fullName, id, imgUrl, onClickFn, lastMessage, u
               {
                 Number(lastMessage?.lastMessageBy) === Number(userId) ?
                   <span className="max-w-[65%]">You </span> :
-                  <span className={clampClasses + " max-w-[55%] inline-block"}>{fullName} </span>
+                  <span title={fullName} className={clampClasses + " max-w-[55%] inline-block"}>{fullName} </span>
               }
-              <span>: {lastMessage?.lastMessageType === "text" ? lastMessage?.lastMessage : 'Sent an attachment'}</span>
-            </small>}
+              <span title={lastMessage?.lastMessageType === "text" ? lastMessage?.lastMessage : 'Sent an attachment'} className={clampClasses}>: {lastMessage?.lastMessageType === "text" ? lastMessage?.lastMessage : 'Sent an attachment'}</span>
+            </small>
+          }
           {
             today() !== getDate(String(lastMessage?.lastMessageCreatedAt)) ?
               <small className="text-[10px] absolute right-2 text-[grey]">

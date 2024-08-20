@@ -83,6 +83,7 @@ export default App;
 // # Validation on backend to edit and delete message only by owner
 // # Create common service to store and fetch data from localstorage in ENCRYPTED form.
 // # Create common service to set and get document title and other meta data.
+// # Redirect URL when user tries to access protected routes without login
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE

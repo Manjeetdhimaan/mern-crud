@@ -29,6 +29,7 @@ export interface IMessageInitialState {
   // Share file in messages
   filesBase64: IFileBase64[];
   modelIsOpen: boolean;
+  isSendingMsg: boolean
 }
 
 export interface IFileBase64 {

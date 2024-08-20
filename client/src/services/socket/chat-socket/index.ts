@@ -73,6 +73,7 @@ export function onPrivateMsg(
           message: message,
         })
       );
+      dispatch(messageActions.setSendingMsg(false));
       if (messageWrapper.current) {
         const maxScroll = messageWrapper.current.scrollHeight;
         messageWrapper.current.scrollTo({ top: maxScroll, behavior: "auto" });
@@ -133,7 +134,7 @@ export function onLastMessageInConversation(
 
 export function onEditPrivateMessage(dispatch: Dispatch): void {
   socket.on(EDIT_PRIVATE_MESSAGE, (newMessage) => {
-
+    dispatch(messageActions.setSendingMsg(false));
     if (location.pathname.includes(newMessage.conversationId)) {
       dispatch(
         messageActions.onEditMessage({
@@ -172,7 +173,7 @@ export function onDeletePrivateMessage(dispatch: Dispatch): void {
       dispatch(messageActions.setTotalCount({
         decreaseCount: true
       }));
-
+      dispatch(messageActions.setSendingMsg(false));
       // emitLastMessageInConversation()
     } else {
       //show notification::

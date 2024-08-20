@@ -1,12 +1,12 @@
-// import { NextFunction, Request, Response } from 'express';
-import { createServer } from "http";
+import os from "os";
 import cluster from "cluster";
-import os from "node:os";
+import { createServer } from "http";
+// import { NextFunction, Request, Response } from 'express';
 
 import app from "./app";
 import db from "./config/db";
-// import RoleController from "./controllers/role.controller";
 import SocketServer from "./socket";
+// import RoleController from "./controllers/role.controller";
 
 // const mockReq = {
 //     query: { page: '1', perPage: '100' }
@@ -53,5 +53,5 @@ import SocketServer from "./socket";
     });
   }
   // const roleCtrl = new RoleController();
-  
+
 })(Number(process.env["SERVER_PORT"] || 4002));

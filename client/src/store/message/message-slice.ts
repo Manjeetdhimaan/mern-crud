@@ -12,6 +12,7 @@ const initialState: IMessageInitialState = {
   receiverUser: null,
   disableLoadPreviosMsg: false,
   isLoading: false,
+  isSendingMsg: false,
   // Share file in messages: Properties
   filesBase64: [],
   modelIsOpen: false,
@@ -108,6 +109,10 @@ const messageSlice = createSlice({
 
     setLoading(state, action) {
       state.isLoading = action.payload;
+    },
+
+    setSendingMsg(state, action) {
+      state.isSendingMsg = action.payload;
     },
 
     // Files sharing methods

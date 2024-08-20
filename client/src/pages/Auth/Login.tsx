@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import http from "../../services/http/http.service";
@@ -14,10 +14,16 @@ import { EyeCloseIcon, EyeIcon } from "../../components/UI/Icons/Icons";
 function Login() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string>();
   const navigate = useNavigate();
   const inputClasses =
     "border-b-2 border-y-cyan-950 outline-none my-4 w-[100%]";
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [])
+
 
   async function login(e: FormEvent<HTMLFormElement>) {
     try {
@@ -65,6 +71,7 @@ function Login() {
             type="email"
             name="email"
             required
+            ref={inputRef}
           />
         </p>
         <p className="flex relative">
@@ -72,12 +79,12 @@ function Login() {
             className={inputClasses}
             placeholder="Password"
             id="password"
-            type={showPassword ? "text" :"password"}
+            type={showPassword ? "text" : "password"}
             name="password"
             required
           />
           {
-            <a className="absolute right-2 top-3 text-cyan-950" title={showPassword ? "Hide password" :"Show password"} onClick={() => setShowPassword((prev) => !prev)}>
+            <a className="absolute right-2 top-3 text-cyan-950" title={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword((prev) => !prev)}>
               {showPassword ? <EyeIcon /> : <EyeCloseIcon />}
             </a>
           }

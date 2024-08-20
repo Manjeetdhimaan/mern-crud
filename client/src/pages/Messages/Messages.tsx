@@ -23,7 +23,6 @@ import {
 import { ILastMessage, IMessage } from "../../models/message.model";
 import { useLoaderData, useNavigate, useParams } from "react-router-dom";
 import {
-  disconnect,
   emitDeletePrivateMsg,
   emitEditPrivateMsg,
   emitLastMessageInConversation,
@@ -34,7 +33,6 @@ import {
   offLastMessageInConversation,
   offPrivateMsg,
   onDeletePrivateMessage,
-  onDisconnect,
   onEditPrivateMessage,
   onLastMessageInConversation,
   onPrivateMsg,
@@ -65,7 +63,7 @@ export function Messages() {
   const navigate = useNavigate();
   const [_, setCurrentEditMsg] = useState<IMessage | null>();
   const [files, setFiles] = useState<FileList | null>(null);
-  const [isSendingFiles, setIsSendingFiles] = useState(false);
+  // const [isSendingMsg, setIsSendingMsg] = useState(false);
 
   const messageWrapper = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -93,20 +91,20 @@ export function Messages() {
   );
 
   const isLoading = useSelector((state: RootState) => state.message.isLoading);
+  const isSendingMsg = useSelector((state: RootState) => state.message.isSendingMsg);
   // Files sharing in message: Properties
 
   useEffect(() => {
     // Initialize socket.io::
-    console.log("socketInit")
     socketInit();
     onPrivateMsg(dispatch, messageWrapper);
     onEditPrivateMessage(dispatch);
     onDeletePrivateMessage(dispatch);
     onLastMessageInConversation(dispatch);
-    onDisconnect();
+    // onDisconnect();
 
     return () => {
-      disconnect();
+      // disconnect();
       offPrivateMsg();
       offEditPrivateMsg();
       offDeletePrivateMsg();
@@ -117,6 +115,10 @@ export function Messages() {
   useEffect(() => {
     dispatch(fetchConversations(Number(id)));
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (textareaRef.current) textareaRef.current.focus();
+  }, [textareaRef.current]);
 
   useEffect(() => {
     if (conversationId) {
@@ -205,6 +207,7 @@ export function Messages() {
     if (!currentMsg.trim() || !conversationId?.trim()) {
       return;
     }
+    dispatch(messageActions.setSendingMsg(true));
     setLoadingPreviousMsgs(false);
     if (isEditingMsg) {
       setCurrentEditMsg((prevMsg): IMessage => {
@@ -239,6 +242,8 @@ export function Messages() {
         String(conversationId),
         "text"
       );
+
+      dispatch(messageActions.setTotalCount({totalCount: totalCount + 1}))
     }
     setCurrentMsg("");
     handleInput();
@@ -321,7 +326,7 @@ export function Messages() {
     dispatch(messageActions.setModelIsOpen(false));
     // handle file sharing, create api on backend to handle files
     if (files) {
-      setIsSendingFiles(true);
+      dispatch(messageActions.setSendingMsg(true));
       for await (const file of files) {
         try {
           const formData = new FormData();
@@ -336,12 +341,12 @@ export function Messages() {
           scrolltoBottom(true);
         } catch (error) {
           // Need to handle api error or failure;
-          setIsSendingFiles(false);
+          dispatch(messageActions.setSendingMsg(false));
           console.log(error);
         }
 
       }
-      setIsSendingFiles(false);
+      dispatch(messageActions.setSendingMsg(false));
     }
 
     handleClearFileData();
@@ -364,6 +369,7 @@ export function Messages() {
   const handleDeleteMsg = (messageId: number): void => {
     // ask for confirmation
     emitDeletePrivateMsg(messageId, String(conversationId));
+    dispatch(messageActions.setSendingMsg(true));
     const lastMessage = messages[messages.length - 2];
     if (lastMessage) {
       const payload: ILastMessage = {
@@ -385,11 +391,10 @@ export function Messages() {
       }
       emitLastMessageInConversation(payload);
     }
-
-    if(messages.length < 20) {
+    if (messages.length < 20 && totalCount <= messages.length) {
       onLoadPreviousMsgs();
     }
-
+    dispatch(messageActions.setTotalCount({totalCount: totalCount - 1}));
     handleCancelEdit();
   };
 
@@ -550,7 +555,7 @@ export function Messages() {
             }
 
           </div>
-          {isSendingFiles && (
+          {isSendingMsg && (
             <div className="w-[50%] flex justify-end">
               <Spinner />
             </div>

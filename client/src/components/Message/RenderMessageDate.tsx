@@ -16,7 +16,7 @@ const RenderMessageDate: React.FC<{ message: IMessage, index: number, messages: 
                 <div className="text-center py-5">
                     <Hr classes="mb-[-14px]" />
                     <span className="bg-white px-3" >
-                        {getMediumDate(date)}
+                        {today() - getDate(messages[index].createdAt) === 1  ? "Yesterday" : getMediumDate(date)}
                     </span>
                 </div>
             }
