@@ -85,7 +85,7 @@ function Login() {
           />
           {
             <a className="absolute right-2 top-3 text-cyan-950" title={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword((prev) => !prev)}>
-              {showPassword ? <EyeIcon /> : <EyeCloseIcon />}
+              {showPassword ? <EyeCloseIcon /> : <EyeIcon />}
             </a>
           }
 

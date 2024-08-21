@@ -7,10 +7,10 @@ import { getDate, getMediumDate, today } from "../../util/dates";
 
 const clampClasses = "overflow-hidden text-ellipsis whitespace-nowrap line-clamp-1 block";
 
-const User: React.FC<IUser> = ({ fullName, id, imgUrl, onClickFn, lastMessage, userId }) => {
+const User: React.FC<{ user: IUser, isConversation: boolean, loggedInUserId: number }> = ({ user, isConversation, loggedInUserId }) => {
 
   const { conversationId: paramId } = useParams();
-
+  const { fullName, id, imgUrl, lastMessage } = user;
   // const startCoversation = async (receiverId: number): Promise<void> => {
   //     try {
   //         const senderId = getUserId();
@@ -34,8 +34,8 @@ const User: React.FC<IUser> = ({ fullName, id, imgUrl, onClickFn, lastMessage, u
 
 
   return (
-    <div className="w-[100%] pl-[4px] ">
-      <a className={classes + " relative"} onClick={() => onClickFn(String(id))}>
+    <div className="w-[100%] pl-[4px]">
+      <a className={classes + " relative"} >
         <Image
           src={imgUrl || ''}
           defaultSrc="/vite.svg"
@@ -44,28 +44,31 @@ const User: React.FC<IUser> = ({ fullName, id, imgUrl, onClickFn, lastMessage, u
         />
         <div className="max-w-[65%]">
           <p className={clampClasses} title={fullName}>{fullName}</p>
-
-
-          {lastMessage?.lastMessage &&
-            <small className={clampClasses + ' flex'}>
-              {
-                Number(lastMessage?.lastMessageBy) === Number(userId) ?
-                  <span className="max-w-[65%]">You </span> :
-                  <span title={fullName} className={clampClasses + " max-w-[55%] inline-block"}>{fullName} </span>
-              }
-              <span title={lastMessage?.lastMessageType === "text" ? lastMessage?.lastMessage : 'Sent an attachment'} className={clampClasses}>: {lastMessage?.lastMessageType === "text" ? lastMessage?.lastMessage : 'Sent an attachment'}</span>
-            </small>
-          }
-          {
-            today() !== getDate(String(lastMessage?.lastMessageCreatedAt)) ?
-              <small className="text-[10px] absolute right-2 text-[grey]">
+          {isConversation &&
+            lastMessage?.lastMessage &&
+            <>
+              <small className={clampClasses + ' flex'}>
                 {
-                  getMediumDate(new Date(String(lastMessage?.lastMessageCreatedAt)))
+                  Number(lastMessage?.lastMessageBy) === Number(loggedInUserId) ?
+                    <span className="max-w-[65%]">You </span> :
+                    <span title={fullName} className={clampClasses + " max-w-[55%] inline-block"}>{fullName} </span>
                 }
+                <span title={lastMessage?.lastMessageType === "text" ? lastMessage?.lastMessage : 'Sent an attachment'} className={clampClasses}>: {lastMessage?.lastMessageType === "text" ? lastMessage?.lastMessage : 'Sent an attachment'}</span>
               </small>
-              :
-              <small className="text-[10px] absolute right-2 text-[grey]">{time(new Date(String(lastMessage?.lastMessageCreatedAt)))}</small>
+
+              {
+                today() !== getDate(String(lastMessage?.lastMessageCreatedAt)) ?
+                  <small className="text-[10px] absolute right-2 text-[grey]">
+                    {
+                      today() - getDate(String(lastMessage?.lastMessageCreatedAt)) === 1 ? "Yesterday" : getMediumDate(new Date(String(lastMessage?.lastMessageCreatedAt)))
+                    }
+                  </small>
+                  :
+                  <small className="text-[10px] absolute right-2 text-[grey]">{time(new Date(String(lastMessage?.lastMessageCreatedAt)))}</small>
+              }
+            </>
           }
+
         </div>
       </a>
     </div>

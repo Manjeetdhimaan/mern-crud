@@ -11,6 +11,5 @@ export interface IUser {
     email: string,
     lastMessage?: ILastMessage
     userId?: number,
-    // isCoversation: boolean,
     onClickFn: <T>(data?: T) => void
 }

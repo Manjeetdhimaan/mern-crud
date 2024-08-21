@@ -71,7 +71,7 @@ export function Messages() {
   const textareaWrapperRef = useRef<HTMLDivElement>(null);
 
   const { conversationId } = useParams();
-  const id = useLoaderData();
+  const loggedInUserId = useLoaderData();
 
   // Redux properties
   const dispatch = useDispatch();
@@ -113,8 +113,8 @@ export function Messages() {
   }, []);
 
   useEffect(() => {
-    dispatch(fetchConversations(Number(id)));
-  }, [dispatch, id]);
+    dispatch(fetchConversations(Number(loggedInUserId)));
+  }, [dispatch, loggedInUserId]);
 
   useEffect(() => {
     if (textareaRef.current) textareaRef.current.focus();
@@ -157,7 +157,7 @@ export function Messages() {
     scrolltoBottom(true);
   }, [messages.length]);
 
-  const scrolltoBottom = (increaseCounter: boolean) => {
+  const scrolltoBottom = (increaseCounter: boolean): void => {
     if (messageWrapper.current && !loadingPreviousMsgs) {
       const maxScroll = messageWrapper.current.scrollHeight;
       messageWrapper.current.scrollTo({
@@ -180,7 +180,7 @@ export function Messages() {
     dispatch(messageActions.setDisableLoadPreviosMsg(true));
   };
 
-  const onEditPrivateMsg = (messageBody: string, messageId: number) => {
+  const onEditPrivateMsg = (messageBody: string, messageId: number): void => {
     setIsEditingMsg(true);
     const currentMsg = messages.find((msg) => msg.id === messageId);
     if (currentMsg) {
@@ -217,7 +217,7 @@ export function Messages() {
         };
         emitEditPrivateMsg(
           newMsg as IMessage,
-          Number(id),
+          Number(loggedInUserId),
           String(conversationId)
         );
         const newMsgIdx = messages.findIndex(msg => +msg.id === Number(newMsg.id));
@@ -238,17 +238,17 @@ export function Messages() {
     } else {
       emitPrivateMsg(
         currentMsg.trim(),
-        Number(id),
+        Number(loggedInUserId),
         String(conversationId),
         "text"
       );
 
-      dispatch(messageActions.setTotalCount({totalCount: totalCount + 1}))
+      dispatch(messageActions.setTotalCount({ totalCount: totalCount + 1 }))
     }
     setCurrentMsg("");
     handleInput();
     // setMessageId(0);
-  }, [currentMsg, conversationId, id]);
+  }, [currentMsg, conversationId, loggedInUserId]);
 
   const handleCancelEdit = (): void => {
     setCurrentEditMsg(() => null);
@@ -287,8 +287,7 @@ export function Messages() {
   const handleFileChange = (files: FileList | null): void => {
     if (files) {
       setFiles(files);
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (const file of files) {
         const fileSizeInMB = file.size / (1024 * 1024);
 
         if (fileSizeInMB >= maxFileSizeInMB) {
@@ -314,8 +313,8 @@ export function Messages() {
           };
           dispatch(messageActions.setFilesBase64(fileBase64Data));
         };
-        if (files[i]) {
-          fileReader.readAsDataURL(files[i]);
+        if (file) {
+          fileReader.readAsDataURL(file);
         }
       }
       dispatch(messageActions.setModelIsOpen(true));
@@ -329,14 +328,14 @@ export function Messages() {
       dispatch(messageActions.setSendingMsg(true));
       for await (const file of files) {
         try {
-          const formData = new FormData();
           const fileName = file.name;
           const lastDotIndex = fileName.lastIndexOf(".");
           const extenstion = fileName.substring(lastDotIndex);
+          const formData = new FormData();
           formData.append("file", file);
-          formData.append("ownerId", String(id));
-          formData.append("conversationId", String(conversationId));
           formData.append("messageType", extenstion);
+          formData.append("ownerId", String(loggedInUserId));
+          formData.append("conversationId", String(conversationId));
           await messageService.sendMessageWithFiles(formData);
           scrolltoBottom(true);
         } catch (error) {
@@ -344,11 +343,9 @@ export function Messages() {
           dispatch(messageActions.setSendingMsg(false));
           console.log(error);
         }
-
       }
       dispatch(messageActions.setSendingMsg(false));
     }
-
     handleClearFileData();
   };
 
@@ -356,8 +353,8 @@ export function Messages() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    dispatch(messageActions.clearFilesBase64([]));
     setFiles(null);
+    dispatch(messageActions.clearFilesBase64([]));
     dispatch(messageActions.setModelIsOpen(false));
   };
 
@@ -385,7 +382,7 @@ export function Messages() {
       const payload: ILastMessage = {
         conversationId: String(conversationId),
         lastMessage: String(""),
-        lastMessageBy: Number(id),
+        lastMessageBy: Number(loggedInUserId),
         lastMessageType: String("text"),
         lastMessageCreatedAt: getCurrentUTCDate() // sending UTC ( Universal time )
       }
@@ -394,7 +391,7 @@ export function Messages() {
     if (messages.length < 20 && totalCount <= messages.length) {
       onLoadPreviousMsgs();
     }
-    dispatch(messageActions.setTotalCount({totalCount: totalCount - 1}));
+    dispatch(messageActions.setTotalCount({ totalCount: totalCount - 1 }));
     handleCancelEdit();
   };
 
@@ -454,7 +451,7 @@ export function Messages() {
       />
       <MessageHeader />
 
-      <Users users={conversations} onClickFn={navigateToConversation}>
+      <Users isConversation={true} users={conversations} onClickFn={navigateToConversation}>
         <div className="p-6 flex items-baseline justify-between">
           <h2 className="text-2xl px-4">Conversations</h2>
           <a className="cursor-pointer">
@@ -473,10 +470,10 @@ export function Messages() {
 
       {conversationId && conversations.length ? (
         <div
-          className="p-10 max-h-[75vh] w-[75%] overflow-x-hidden right-[0] absolute top-[75px] scrollbar-thin"
+          className="p-10 max-h-[75vh] w-[75%] overflow-x-hidden right-[0] absolute top-[75px] scrollbar-thin min-h-[75vh]"
           ref={messageWrapper}
         >
-          <div className="h-4/5 pr-[8%] pl-[2%] overflow-auto scrollbar-thin max-h-[80%]">
+          <div className="h-4/5 pr-[8%] pl-[2%] scrollbar-thin max-h-[80%]">
             {
               //!isLoading &&
               <>
@@ -509,14 +506,14 @@ export function Messages() {
                     <div
                       key={message.id}
                       className={
-                        Number(id) === message.ownerId
+                        Number(loggedInUserId) === message.ownerId
                           ? "text-right my-6"
                           : "my-6"
                       }
                     >
                       <span
                         className={
-                          Number(id) === message.ownerId
+                          Number(loggedInUserId) === message.ownerId
                             ? `${messageClasses} ${message.messageType === "text" ? "bg-gray-700" : "!text-black"}`
                             : `${messageClasses} ${message.messageType === "text" ? "bg-slate-500" : "!text-black"}`
                         }
@@ -536,14 +533,14 @@ export function Messages() {
                               classes="border border-solid p-2 scrollbar-none size-[12rem]"
                               fileUrl={message.body}
                               fileExtenstion={message.messageType}
-                              showDownloadLink={Number(message.ownerId) !== Number(id)}
+                              showDownloadLink={Number(message.ownerId) !== Number(loggedInUserId)}
                             />
                             <RenderMessageTime createdAt={message.createdAt} classes="mt-0 text-[#616060]" />
                           </>
 
                         )}
                       </span>
-                      {Number(id) === message.ownerId && (
+                      {Number(loggedInUserId) === message.ownerId && (
                         <a className="ml-2">
                           <PopupMenu items={message.messageType === "text" ? menuItemsForText : menuItemsForFiles} data={message} />
                         </a>
