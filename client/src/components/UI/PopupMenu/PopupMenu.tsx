@@ -5,7 +5,7 @@ import { ArrowDownIcon } from "../Icons/Icons";
 import { useOutsideClick } from "../../../hooks/useOutsideClick";
 import { IMenuItem, IPopupMenuProps } from "../../../models/ui.model";
 
-const PopupMenu: React.FC<IPopupMenuProps> = ({ items, data }): React.ReactNode => {
+const PopupMenu: React.FC<{ payload?: IPopupMenuProps, children?: React.ReactNode, closeOnClick?: boolean }> = ({ payload, children, closeOnClick = true }): React.ReactNode => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [menuPosition, setMenuPosition] = useState<"top" | "bottom">("bottom");
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -46,7 +46,7 @@ const PopupMenu: React.FC<IPopupMenuProps> = ({ items, data }): React.ReactNode 
     label: string,
     onClick: <T>(label: string, data?: T) => void
   ) => {
-    onClick(label, data);
+    onClick(label, payload?.data);
     setIsOpen(false); // Close menu after clicking an item
   };
 
@@ -66,8 +66,14 @@ const PopupMenu: React.FC<IPopupMenuProps> = ({ items, data }): React.ReactNode 
     ));
   };
 
+  const handleClickInsideMenu = (event: React.MouseEvent) => {
+    // Prevent closing when clicking inside the menu
+    if (closeOnClick) setIsOpen(false);
+    event.stopPropagation();
+  };
+
   return (
-    <div className="menu-container">
+    <div className="menu-container" >
       <button
         className="menu-button cursor-pointer bg-transparent outline-none p-0"
         onClick={toggleMenu}
@@ -76,8 +82,8 @@ const PopupMenu: React.FC<IPopupMenuProps> = ({ items, data }): React.ReactNode 
         <ArrowDownIcon />
       </button>
       {isOpen && (
-        <div className={`menu animate-scale menu-${menuPosition}`} ref={menuRef}>
-          <ul>{renderMenuItems(items)}</ul>
+        <div onClick={handleClickInsideMenu} className={`menu animate-scale menu-${menuPosition}`} ref={menuRef}>
+          <ul>{children ? children : renderMenuItems(payload?.items as IMenuItem[])}</ul>
         </div>
       )}
     </div>

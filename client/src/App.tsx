@@ -84,6 +84,7 @@ export default App;
 // # Create common service to store and fetch data from localstorage in ENCRYPTED form.
 // # Create common service to set and get document title and other meta data.
 // # Redirect URL when user tries to access protected routes without login
+// # BUG - Web socket connection is failing sometime.
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE

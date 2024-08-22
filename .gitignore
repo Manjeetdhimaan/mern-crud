@@ -1,5 +1,5 @@
 server/node_modules
 server/.env
 server/database.json
-server/uploads
+server/public/uploads
 client/node_modules

@@ -126,6 +126,7 @@ export function Messages() {
       dispatch(fetchMessages(String(conversationId)));
       emitRoom(String(conversationId));
     }
+
     dispatch(
       messageActions.setConversationId({
         conversationId: conversationId,
@@ -542,7 +543,9 @@ export function Messages() {
                       </span>
                       {Number(loggedInUserId) === message.ownerId && (
                         <a className="ml-2">
-                          <PopupMenu items={message.messageType === "text" ? menuItemsForText : menuItemsForFiles} data={message} />
+                          <PopupMenu payload={{ items: message.messageType === "text" ? menuItemsForText : menuItemsForFiles, data: message }} closeOnClick={false} >
+                            {/* <div>Menu Item</div> */}
+                          </PopupMenu>
                         </a>
                       )}
                     </div>
