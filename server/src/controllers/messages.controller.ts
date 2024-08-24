@@ -4,7 +4,7 @@ import { QueryResult, ResultSetHeader } from "mysql2";
 import DatabaseService from "../services/db.service";
 import MessageService from "../services/messages.services";
 import { IMessage, IUser } from "../types/user.types";
-import { successAction } from "../utils/response";
+import { failAction, successAction } from "../utils/response";
 import { generateUUID } from "../helpers/generate-unique-id";
 import { CONVERSATIONS, MESSAGES } from "../utils/database-tables";
 import { emitFileShareMessage } from "../socket";
@@ -28,14 +28,18 @@ export default class MessageController {
       };
 
       await this.databaseService.insertData(payload, CONVERSATIONS);
-      const data = (await this.databaseService.getData(
+      const fields = "id, title, startedBy, recievedBy, createdAt, updatedAt";
+      const data = (await this.messageService.getConversationWithJoinUsers(
         CONVERSATIONS,
         "startedBy",
-        req.body.startedBy
-      )) as QueryResult[];
+        Number(payload.startedBy),
+        "recievedBy",
+        Number(payload.startedBy),
+        fields
+      )) as IUser[];
       return res
         .status(200)
-        .json(successAction(data[0], "Conversation statred successfully!"));
+        .json(successAction({ conversations: data }, "Conversation statred successfully!"));
     } catch (error) {
       return next(error);
     }
@@ -163,6 +167,22 @@ export default class MessageController {
       return next(error);
     }
   };
+
+  permanentDeleteConversation = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+    try {
+      const { id } = req.params;
+      const data = await this.databaseService.permanentDelete(CONVERSATIONS, "id", id) as ResultSetHeader;
+      if (data) {
+        if (data.affectedRows > 0) {
+          return res.status(200).json(successAction(null, "Conversation deleted permanently"));
+        }
+      }
+      return res.status(404).json(failAction("No conversation found with this ID"));
+    } catch (error) {
+      console.log(error);
+      return next(error);
+    }
+  }
 
   // updateLastMessageInConversation = async (
   //   req: Request,

@@ -1,11 +1,41 @@
 import { Dispatch } from "@reduxjs/toolkit";
 
 import http from "../../services/http/http.service";
+import snackbarService from "../ui/snackbar/snackbar-actions";
 import { getUserEmail } from "../../util/auth";
 import { IUser } from "../../models/user.model";
 import { messageActions } from "./message-slice";
 import { Conversation } from "../../models/conversation.model";
 import { messageBaseUrl } from "../../constants/local.constants";
+
+function getUpdatedConversations(conversations: Conversation[], localUserEmail: string): IUser[] {
+  const updatedConversations = conversations.map(
+    (conversation: Conversation) => {
+      const isSameUser = localUserEmail === conversation.startedByEmail;
+      return {
+        id: conversation.conversationId,
+        fullName: isSameUser
+          ? conversation.receivedByName
+          : conversation.startedByName,
+        email: isSameUser
+          ? conversation.receivedByEmail
+          : conversation.startedByEmail,
+        receiverId: isSameUser
+          ? conversation.receivedById
+          : conversation.startedById,
+        lastMessage: {
+          lastMessage: conversation.lastMessage,
+          lastMessageBy: conversation.lastMessageBy,
+          lastMessageType: conversation.lastMessageType,
+          lastMessageCreatedAt: conversation.lastMessageCreatedAt
+        },
+        createdAt: conversation.conversationCreatedAt,
+        updatedAt: conversation.conversationUpdatedAt
+      };
+    }
+  );
+  return (updatedConversations as IUser[]).sort((a: IUser, b: IUser) => new Date(String(b.lastMessage?.lastMessageCreatedAt)).getTime() - new Date(String(a.lastMessage?.lastMessageCreatedAt)).getTime());
+}
 
 const fetchConversations = (senderId: number): any => {
   return async (dispatch: Dispatch): Promise<void> => {
@@ -17,32 +47,8 @@ const fetchConversations = (senderId: number): any => {
       if (response && response.data && response.data.conversations) {
         const conversations = response.data.conversations;
         const localUserEmail = getUserEmail();
-        const updatedConversations: IUser[] = conversations.map(
-          (conversation: Conversation) => {
-            const isSameUser = localUserEmail === conversation.startedByEmail;
-            return {
-              id: conversation.conversationId,
-              fullName: isSameUser
-                ? conversation.receivedByName
-                : conversation.startedByName,
-              email: isSameUser
-                ? conversation.receivedByEmail
-                : conversation.startedByEmail,
-              receiverId: isSameUser
-                ? conversation.receivedById
-                : conversation.startedById,
-              lastMessage: {
-                lastMessage: conversation.lastMessage,
-                lastMessageBy: conversation.lastMessageBy,
-                lastMessageType: conversation.lastMessageType,
-                lastMessageCreatedAt: conversation.lastMessageCreatedAt
-              },
-              createdAt: conversation.conversationCreatedAt,
-              updatedAt: conversation.conversationUpdatedAt
-            };
-          }
-        );
-        return updatedConversations.sort((a: IUser, b: IUser) => new Date(String(b.lastMessage?.lastMessageCreatedAt)).getTime() - new Date(String(a.lastMessage?.lastMessageCreatedAt)).getTime());
+        const updatedConversations = getUpdatedConversations(conversations, String(localUserEmail))
+        return updatedConversations;
       } else {
         return [];
       }
@@ -149,5 +155,27 @@ const fetchPreviousMessages = (
   };
 };
 
+const deleteConversation = (cnvsId: string): any => {
+  return async (dispatch: Dispatch): Promise<void> => {
+    const deleteData = async () => {
+      const response = await http.delete(`${messageBaseUrl}/delete-conversation/${cnvsId}`);
+      if (response && response.data && response.data.success) {
+        return true;
+      } else {
+        return false;
+      }
+    };
 
-export { fetchConversations, fetchMessages, fetchPreviousMessages }
+    try {
+      const success = await deleteData();
+      if (success) {
+        dispatch(messageActions.setConversationsOnDelete({ id: String(cnvsId) }));
+      }
+      else {
+        snackbarService.error("Failed to delete conversation")
+      }
+    } catch (error) { }
+  };
+};
+
+export { fetchConversations, fetchMessages, fetchPreviousMessages, deleteConversation, getUpdatedConversations }

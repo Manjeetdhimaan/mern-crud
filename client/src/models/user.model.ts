@@ -10,6 +10,6 @@ export interface IUser {
     updatedAt: string,
     email: string,
     lastMessage?: ILastMessage
-    userId?: number,
+    // userId?: number,
     onClickFn: <T>(data?: T) => void
 }

@@ -2,12 +2,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import Users from "../../components/Users/Users";
+import useDebounce from "../../hooks/useDebounce";
 import Spinner from "../../components/UI/Spinner/Spinner";
+import httpService from "../../services/http/http.service";
 import PopupMenu from "../../components/UI/PopupMenu/PopupMenu";
 import messageService from "../../services/http/message.service";
 import FileInput from "../../components/UI/FileChange/FileChange";
 import MessageHeader from "../../components/Message/MessageHeader";
 import FileShareInMessage from "../../components/Message/FileShare";
+import snackbarService from "../../store/ui/snackbar/snackbar-actions";
+import RenderMessageTime from "../../components/Message/RenderMessageTime";
 import RenderMessageDate from "../../components/Message/RenderMessageDate";
 import LoadPreviousMessages from "../../components/Message/LoadPreviousMessages";
 import RenderMessageContent from "../../components/Message/RenderMessageContent";
@@ -19,6 +23,7 @@ import {
   SendIcon,
   DeleteIcon,
   DownloadIcon,
+  CrossIcon,
 } from "../../components/UI/Icons/Icons";
 import { ILastMessage, IMessage } from "../../models/message.model";
 import { useLoaderData, useNavigate, useParams } from "react-router-dom";
@@ -44,26 +49,30 @@ import {
   fetchConversations,
   fetchMessages,
   fetchPreviousMessages,
+  getUpdatedConversations,
 } from "../../store/message/message-actions";
 import { RootState } from "../../store";
-import { messageActions } from "../../store/message/message-slice";
-import { maxFileSizeInMB } from "../../constants/files.constants";
-import snackbarService from "../../store/ui/snackbar/snackbar-actions";
-import RenderMessageTime from "../../components/Message/RenderMessageTime";
 import { getCurrentUTCDate } from "../../util/dates";
+import { maxFileSizeInMB } from "../../constants/files.constants";
+import { messageActions } from "../../store/message/message-slice";
+import { fetchUsers } from "../../store/user/user-actions";
+import { IUser } from "../../models/user.model";
+import { messageBaseUrl } from "../../constants/local.constants";
+import { getUserEmail } from "../../util/auth";
 
-let counter = 0;
+let counterForScroll = 0;
 
 export function Messages() {
   // Local properties
+  const navigate = useNavigate();
   const [currentMsg, setCurrentMsg] = useState<string>("");
   const [loadingPreviousMsgs, setLoadingPreviousMsgs] =
     useState<boolean>(false);
   const [isEditingMsg, setIsEditingMsg] = useState<boolean>(false);
-  const navigate = useNavigate();
   const [_, setCurrentEditMsg] = useState<IMessage | null>();
   const [files, setFiles] = useState<FileList | null>(null);
-  // const [isSendingMsg, setIsSendingMsg] = useState(false);
+  const [searchUsers, setSearchUsers] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const messageWrapper = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,6 +82,7 @@ export function Messages() {
   const { conversationId } = useParams();
   const loggedInUserId = useLoaderData();
 
+  const debouncedFetchUsers = useDebounce((query: string) => dispatch(fetchUsers(query)), 500);
   // Redux properties
   const dispatch = useDispatch();
   const conversations = useSelector(
@@ -89,10 +99,13 @@ export function Messages() {
   const disableLoadPreviosMsg = useSelector(
     (state: RootState) => state.message.disableLoadPreviosMsg
   );
+  let users = useSelector(
+    (state: RootState) => state.user.users
+  );
+  users = users.filter((user: IUser) => +user.id !== Number(loggedInUserId) && !conversations.find(cnvs => Number(cnvs.receiverId) === +user.id));
 
   const isLoading = useSelector((state: RootState) => state.message.isLoading);
   const isSendingMsg = useSelector((state: RootState) => state.message.isSendingMsg);
-  // Files sharing in message: Properties
 
   useEffect(() => {
     // Initialize socket.io::
@@ -122,7 +135,7 @@ export function Messages() {
 
   useEffect(() => {
     if (conversationId) {
-      counter = 0;
+      counterForScroll = 0;
       dispatch(fetchMessages(String(conversationId)));
       emitRoom(String(conversationId));
     }
@@ -156,6 +169,7 @@ export function Messages() {
 
   useEffect(() => {
     scrolltoBottom(true);
+
   }, [messages.length]);
 
   const scrolltoBottom = (increaseCounter: boolean): void => {
@@ -163,10 +177,10 @@ export function Messages() {
       const maxScroll = messageWrapper.current.scrollHeight;
       messageWrapper.current.scrollTo({
         top: maxScroll,
-        behavior: counter === 0 ? "instant" : "smooth",
+        behavior: counterForScroll === 0 ? "instant" : "smooth",
       });
-      if (counter === 0 && increaseCounter) {
-        counter++;
+      if (counterForScroll === 0 && increaseCounter) {
+        counterForScroll++;
       }
     }
   }
@@ -191,7 +205,7 @@ export function Messages() {
       setCurrentMsg(currentMessage.body);
       handleInput();
     } else {
-      // show notification
+      // show notification::optional
     }
   };
 
@@ -251,6 +265,20 @@ export function Messages() {
     // setMessageId(0);
   }, [currentMsg, conversationId, loggedInUserId]);
 
+  const handleInput = () => {
+    setTimeout(() => {
+      if (textareaRef.current && textareaWrapperRef.current) {
+        if (textareaRef.current.scrollHeight > 50) {
+          textareaRef.current.style.height = "auto"; // Reset height
+          textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Set new height
+          if (+textareaRef.current.style.height.slice(0, -2) === 56) {
+            textareaRef.current.style.height = `${50}px`; // Set new height
+          }
+        }
+      }
+    });
+  };
+
   const handleCancelEdit = (): void => {
     setCurrentEditMsg(() => null);
     setIsEditingMsg(false);
@@ -264,20 +292,6 @@ export function Messages() {
     } else {
       navigate(`/messages/${cnvsId}`);
     }
-  };
-
-  const handleInput = () => {
-    setTimeout(() => {
-      if (textareaRef.current && textareaWrapperRef.current) {
-        if (textareaRef.current.scrollHeight > 50) {
-          textareaRef.current.style.height = "auto"; // Reset height
-          textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Set new height
-          if (+textareaRef.current.style.height.slice(0, -2) === 56) {
-            textareaRef.current.style.height = `${50}px`; // Set new height
-          }
-        }
-      }
-    });
   };
 
   const handleChangeInput = (event: ChangeEvent<HTMLTextAreaElement>): void => {
@@ -416,6 +430,58 @@ export function Messages() {
     }
   };
 
+  const toggleSearchUsers = async () => {
+    setSearchUsers((prev) => {
+      if (!prev) {
+        dispatch(fetchUsers(searchQuery));
+        setSearchQuery("");
+      }
+      return !prev
+    });
+  }
+
+  const startCoversation = async <T extends unknown>(receiverId: T): Promise<void> => {
+    try {
+      const senderId = Number(loggedInUserId);
+      const payload = {
+        title: 'Sender=' + senderId + ': receiver=' + receiverId,
+        startedBy: Number(senderId),
+        recievedBy: receiverId
+      }
+      const response = await httpService.post(`${messageBaseUrl}/start`, payload);
+      const conversations = response.data.conversations;
+      const cnvsId = conversations[conversations.length - 1].conversationId
+      const localUserEmail = String(getUserEmail())
+      const updatedConversations = getUpdatedConversations(conversations, localUserEmail);
+      dispatch(
+        messageActions.setConversations({
+          conversations: updatedConversations,
+          totalCount: 0,
+        })
+      );
+      dispatch(
+        messageActions.setReceiverUser({
+          conversations: updatedConversations,
+        })
+      );
+      navigate(`/messages/${cnvsId}`);
+      setSearchUsers(false);
+    } catch (error) {
+      console.log(error);
+      // Inform user about the error
+    }
+  }
+
+  const fetchUsersWithQuery = (event: ChangeEvent<HTMLInputElement>): void => {
+    setSearchQuery(event.target.value);
+    debouncedFetchUsers(event.target.value);
+  }
+
+  const onClearSearchQuery = (): void => {
+    setSearchQuery("");
+    debouncedFetchUsers("");
+  }
+
   const menuItemsForText: IMenuItem[] = [
     {
       label: "Edit",
@@ -446,18 +512,36 @@ export function Messages() {
 
   return (
     <section className="relative w-[80%]">
+
       <FileShareInMessage
         handleCancelFileSharing={handleClearFileData}
         handleFileSharing={handleFileSharing}
       />
       <MessageHeader />
 
-      <Users isConversation={true} users={conversations} onClickFn={navigateToConversation}>
-        <div className="p-6 flex items-baseline justify-between">
+      <Users isConversation={searchUsers ? false : true} users={searchUsers ? users : conversations} onClickFn={searchUsers ? startCoversation : navigateToConversation}>
+        <div className={`px-6 py-3 mb-1 flex justify-between !w-[100%] sticky top-0 bg-stone-200 z-50 shadow-sm ${searchUsers ? "items-center" : "items-baseline"}`}>
           <h2 className="text-2xl px-4">Conversations</h2>
-          <a className="cursor-pointer">
-            <PlusIcon stroke={3.5} className="size-4" />
+          <a className="cursor-pointer z-50" onClick={toggleSearchUsers}>
+            {
+              searchUsers ? <span className="font-normal">Cancel</span>
+                : <PlusIcon stroke={3.5} className="size-4" />
+            }
           </a>
+        </div>
+        <div className="text-center">
+          {
+            searchUsers &&
+            <div className="relative">
+              <input type="text" value={searchQuery} onChange={fetchUsersWithQuery} className="w-[90%] rounded-xl outline-none px-4 h-6 font-normal text-sm" placeholder="Search..." />
+              {
+                searchQuery &&
+                <a className="absolute right-5 top-[5px]" onClick={onClearSearchQuery}>
+                  <CrossIcon className="size-4" stroke="1.5" />
+                </a>
+              }
+            </div>
+          }
         </div>
       </Users>
 
@@ -468,7 +552,6 @@ export function Messages() {
           {/* <p>Loading messages...</p> */}
         </div>
       )}
-
       {conversationId && conversations.length ? (
         <div
           className="p-10 max-h-[75vh] w-[75%] overflow-x-hidden right-[0] absolute top-[75px] scrollbar-thin min-h-[75vh]"
@@ -476,7 +559,6 @@ export function Messages() {
         >
           <div className="h-4/5 pr-[8%] pl-[2%] scrollbar-thin max-h-[80%]">
             {
-              //!isLoading &&
               <>
                 <LoadPreviousMessages
                   messages={messages}
@@ -612,14 +694,16 @@ export function Messages() {
           )}
         </div>
       ) : (
-        <div className=" max-h-screen w-[75%] inline-block text-center">
+        <div className="max-h-screen inline-block text-center">
           {!isLoading && (
-            <p className="text-center">
+            <div className="text-center absolute top-[20%] w-[80%]">
               {!conversationId ? "Please select a conversation" : "No messages"}
-            </p>
+            </div>
           )}
+
         </div>
       )}
+
     </section>
   );
 }

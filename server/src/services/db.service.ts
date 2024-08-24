@@ -82,16 +82,33 @@ export default class DatabaseService {
     page = 1,
     limit = 1000,
     sort = "ASC",
+    search?: string,
     getDeleted?: boolean
   ): Promise<QueryResult | Error> {
     return new Promise(async function (resolve, reject) {
       try {
         const offset = (page - 1) * limit;
         let query = `SELECT ${fields} FROM ${table} ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
-        if (getDeleted === false)
+
+        if (search && search.trim()) {
+          query = `SELECT ${fields} FROM ${table} WHERE fullName LIKE '%${search ? search : ''}%' OR email LIKE '%${search ? search : ''}%' ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
+        }
+
+        if (getDeleted === false && search && search.trim()) {
+          query = `SELECT ${fields} FROM ${table} WHERE isDeleted = ${false} AND fullName LIKE '%${search}%' OR email LIKE '%${search}%' ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
+        }
+
+        if (getDeleted === false && !search) {
           query = `SELECT ${fields} FROM ${table} WHERE isDeleted = ${false} ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
-        if (getDeleted)
+        }
+
+        if (getDeleted && search && search.trim()) {
+          query = `SELECT ${fields} FROM ${table} WHERE isDeleted = ${true} AND fullName LIKE '%${search}%' OR email LIKE '%${search}%' ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
+        }
+
+        if (getDeleted && !search) {
           query = `SELECT ${fields} FROM ${table} WHERE isDeleted = ${true} ORDER BY createdAt ${sort} LIMIT ${limit} OFFSET ${offset}`;
+        }
         const [result] = await db.query<QueryResult>(query);
         return resolve(result);
       } catch (error) {
@@ -207,7 +224,7 @@ export default class DatabaseService {
     return new Promise(async function (resolve, reject) {
       try {
         const value =
-          typeof whereValue === "string" ? `${whereValue}` : whereValue;
+          typeof whereValue === "string" ? `'${whereValue}'` : whereValue;
         const query = `DELETE FROM ${table} WHERE ${whereKey} = ${value}`;
         const [result] = await db.query(query);
         return resolve(result);

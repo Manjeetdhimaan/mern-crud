@@ -86,17 +86,12 @@ export default class UserController {
         }
     }
 
-    //! Not in use for now
     getUsers = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
-            const { page, perPage, getDeleted } = req.query;
-            const fields = 'id, fullName, email, createdAt, updatedAt, isDeleted'
-            // const fields = '*'
-            const data = await this.databaseService.getAll(USERS, fields, (Number(page) || 1), (Number(perPage) || 10), undefined, getDeleted === "true" ? true : false) as IUser[];
-            // const modifiedData = (data as { [key: string]: string }[]).map((ob) => {
-            //     const { password, ...rest } = ob;
-            //     return rest;
-            // })
+            const { page, perPage, getDeleted, search } = req.query;
+            const fields = 'id, fullName, email, createdAt, updatedAt, isDeleted';
+            const searchQuery = search ? String(search) : ""
+            const data = await this.databaseService.getAll(USERS, fields, (Number(page) || 1), (Number(perPage) || 10), undefined, searchQuery, getDeleted === "true" ? true : false) as IUser[];
             if (!data || data.length <= 0) return res.status(200).json(successAction(null, "No users found!"));
             return res.status(200).json(successAction({ users: data }, "Users fetched successfully!"));
         } catch (error) {

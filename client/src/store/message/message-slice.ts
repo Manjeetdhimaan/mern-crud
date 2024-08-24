@@ -92,6 +92,11 @@ const messageSlice = createSlice({
       state.totalCount = action.payload.totalCount;
     },
 
+    setConversationsOnDelete(state, action) {
+      const filteredConversations = state.conversations.filter(cnvs => cnvs.id !== action.payload.id);
+      state.conversations = filteredConversations;
+    },
+
     setReceiverUser(state, action) {
       const currentreceiverUser = action.payload.conversations.find(
         (conversation: Conversation) => conversation.id === state.conversationId

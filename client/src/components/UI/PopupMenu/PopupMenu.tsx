@@ -5,7 +5,7 @@ import { ArrowDownIcon } from "../Icons/Icons";
 import { useOutsideClick } from "../../../hooks/useOutsideClick";
 import { IMenuItem, IPopupMenuProps } from "../../../models/ui.model";
 
-const PopupMenu: React.FC<{ payload?: IPopupMenuProps, children?: React.ReactNode, closeOnClick?: boolean }> = ({ payload, children, closeOnClick = true }): React.ReactNode => {
+const PopupMenu: React.FC<{ payload?: IPopupMenuProps, children?: React.ReactNode, closeOnClick?: boolean, icon?: React.ReactNode }> = ({ payload, children, closeOnClick = true, icon = <ArrowDownIcon /> }): React.ReactNode => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [menuPosition, setMenuPosition] = useState<"top" | "bottom">("bottom");
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -79,7 +79,7 @@ const PopupMenu: React.FC<{ payload?: IPopupMenuProps, children?: React.ReactNod
         onClick={toggleMenu}
         ref={buttonRef}
       >
-        <ArrowDownIcon />
+        {icon}
       </button>
       {isOpen && (
         <div onClick={handleClickInsideMenu} className={`menu animate-scale menu-${menuPosition}`} ref={menuRef}>

@@ -34,7 +34,6 @@ const router = createBrowserRouter([
           },
         ]
       },
-
       {
         path: 'logout',
         action: logoutAction,
@@ -69,8 +68,6 @@ export default App;
 
 // TO DO:
 // # Add option to preview and download files.
-// # Add user search feature / Only search users which are not in the list.
-// # navigate to /messages/:conversationID  whenever user clicked on any user name/email to start a new conversation.
 // # Handle form validation properly.
 // # Add reply feature in chat.
 // # Add animation using framer-motion.
@@ -85,6 +82,9 @@ export default App;
 // # Create common service to set and get document title and other meta data.
 // # Redirect URL when user tries to access protected routes without login
 // # BUG - Web socket connection is failing sometime.
+// # Make mobile responsive
+// # Delete all messages of conversation when deleting a conversation
+// # Implement search functionality in conversations list
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE
@@ -107,3 +107,5 @@ export default App;
 // # Show which user has sent the message in chat. - DONE
 // # Show last message sent in every conversation in left section. - DONE
 // # Sort conversations list based on last message received or sent. - DONE
+// # Add user search feature / Only search users which are not in the list. - DONE
+// # navigate to /messages/:conversationID  whenever user clicked on any user name/email to start a new conversation. - DONE

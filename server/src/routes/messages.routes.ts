@@ -16,6 +16,6 @@ router.get('/get-messages', verifyJwtToken, messageCtrl.getMessages);
 router.get('/conversations', verifyJwtToken, messageCtrl.getConversations);
 // router.put('/update-last-message', verifyJwtToken, messageCtrl.updateLastMessageInConversation);
 router.post('/private-message', verifyJwtToken, uploadMiddleware.getMiddleware().single('file'), messageCtrl.privateMessageWithFiles);
-
+router.delete('/delete-conversation/:id', verifyJwtToken, messageCtrl.permanentDeleteConversation);
 export type TVerifyToken = (req: IRequest, res: Response, next: NextFunction) => Promise<Response | void>;
 export default router;
