@@ -82,11 +82,16 @@ const User: React.FC<{ user: IUser, isConversation: boolean, loggedInUserId: num
                   :
                   <small className="text-[10px] absolute right-2 text-[grey]">{time(new Date(String(lastMessage?.lastMessageCreatedAt)))}</small>
               }
+
             </>
             :
             <small className={clampClasses + ' flex'}>
               <span className="max-w-[65%]">{user.email} </span>
             </small>
+          }
+          
+          {
+            isConversation && !lastMessage?.lastMessage && <small className={clampClasses}>No Messages</small>
           }
         </div>
         {
