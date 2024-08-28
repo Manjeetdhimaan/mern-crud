@@ -23,6 +23,7 @@ class HttpClient {
 
     _handleRequest = (config: InternalAxiosRequestConfig<AxiosHeaders>): InternalAxiosRequestConfig<AxiosHeaders>  => {
         const token = getAuthToken();
+        window.dispatchEvent(new Event('httpRequestStart'));
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -30,10 +31,12 @@ class HttpClient {
     };
 
     _handleRequestError = (error: Error) => {
+        window.dispatchEvent(new Event('httpRequestEnd'));
         return Promise.reject(error);
     };
 
     _handleResponse = (response: AxiosResponse) => {
+        window.dispatchEvent(new Event('httpRequestEnd'));
         return response;
     };
 

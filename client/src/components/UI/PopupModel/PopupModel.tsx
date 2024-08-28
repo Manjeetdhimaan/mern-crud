@@ -42,7 +42,7 @@ const Model: React.FC<{
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
           onClick={handleOutsideClick} // Detect clicks outside
         >
-          <dialog ref={dialog} className="animate-scale z-[-1]">
+          <dialog ref={dialog} className="animate-scale z-[-1] rounded">
             <div className="px-10 pt-5 sticky top-0 bg-white">
               <h2 className="text-xl">{title}</h2>
             </div>

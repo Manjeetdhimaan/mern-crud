@@ -174,22 +174,32 @@ export default class DatabaseService {
   // common api service to get single( or can be multiple ) data dynamically from table with two OR conditions.
   async getDataWithOrWhere<T>(
     table: string,
-    whereKey: string,
-    whereValue: T,
-    orWhereKey: string,
-    orWhereValue: T,
+    conditions: Array<{ key: string; value: T }>,  // Array of conditions
     fields = "*",
     getDeleted?: boolean
   ): Promise<QueryResult | Error> {
     return new Promise(async function (resolve, reject) {
       try {
-        const extractedValue =
-          typeof whereValue === "string" ? `'${whereValue}'` : whereValue;
-        let query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue}`;
-        if (getDeleted === false)
-          query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue} AND isDeleted = ${false}`;
-        if (getDeleted === true)
-          query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedValue} OR ${orWhereKey} = ${extractedValue} AND isDeleted = ${true}`;
+        // Map over conditions and build dynamic OR clause
+        const whereClause = conditions
+          .map(condition => {
+            const extractedValue = typeof condition.value === "string"
+              ? `'${condition.value}'`
+              : condition.value;
+            return `${condition.key} = ${extractedValue}`;
+          })
+          .join(" OR ");
+  
+        // Build the main query
+        let query = `SELECT ${fields} FROM ${table} WHERE ${whereClause}`;
+  
+        // Handle isDeleted condition
+        if (getDeleted === false) {
+          query += " AND isDeleted = false";
+        } else if (getDeleted === true) {
+          query += " AND isDeleted = true";
+        }
+  
         const [result] = await db.query<QueryResult>(query);
         return resolve(result);
       } catch (error) {
@@ -197,6 +207,36 @@ export default class DatabaseService {
       }
     });
   }
+
+  // async getDataWithOrWhere<T>(
+  //   table: string,
+  //   whereKey: string,
+  //   whereValue: T,
+  //   orWhereKey: string,
+  //   orWhereValue: T,
+  //   fields = "*",
+  //   getDeleted?: boolean
+  // ): Promise<QueryResult | Error> {
+  //   return new Promise(async function (resolve, reject) {
+  //     try {
+  //       const extractedWhereValue =
+  //         typeof whereValue === "string" ? `'${whereValue}'` : whereValue;
+          
+  //       const extractedOrWhereValue =
+  //         typeof orWhereValue === "string" ? `'${orWhereValue}'` : orWhereValue;
+
+  //       let query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedWhereValue} OR ${orWhereKey} = ${extractedOrWhereValue}`;
+  //       if (getDeleted === false)
+  //         query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedWhereValue} OR ${orWhereKey} = ${extractedOrWhereValue} AND isDeleted = ${false}`;
+  //       if (getDeleted === true)
+  //         query = `SELECT ${fields} FROM ${table} WHERE ${whereKey} = ${extractedWhereValue} OR ${orWhereKey} = ${extractedOrWhereValue} AND isDeleted = ${true}`;
+  //       const [result] = await db.query<QueryResult>(query);
+  //       return resolve(result);
+  //     } catch (error) {
+  //       return reject(error);
+  //     }
+  //   });
+  // }
 
   async softDelete<T>(
     table: string,
@@ -234,65 +274,40 @@ export default class DatabaseService {
     });
   }
 
-  async update<T>(
-    table: string,
-    updateKey: string,
-    updateValue: T,
-    whereKey: string,
-    whereValue: T,
-    secondUpdateKey?: string,
-    secondUpdateValue?: T,
-    thirdUpdateKey?: string,
-    thirdUpdateValue?: T,
-    fourthUpdateKey?: string,
-    fourthUpdateValue?: T,
-  ): Promise<QueryResult | Error> {
-    return new Promise(async function (resolve, reject) {
-      try {
-        const updateValueEscaped = typeof updateValue === "string" ? (updateValue as string).replace(/'/g, "\\'") : updateValue;
-        let query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}' WHERE ${whereKey} = '${whereValue}'`;
-
-        if (secondUpdateKey) {
-          const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'") : secondUpdateValue;
-          query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}', ${secondUpdateKey} = '${secondUpdateValueEscaped}'  WHERE ${whereKey} = '${whereValue}'`;
-        }
-
-        if (thirdUpdateKey) {
-          const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'") : secondUpdateValue;
-          const thirdUpdateValueEscaped = typeof thirdUpdateValue === "string" ? (thirdUpdateValue as string).replace(/'/g, "\\'") : thirdUpdateValue;
-          query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}', ${secondUpdateKey} = '${secondUpdateValueEscaped}', ${thirdUpdateKey} = '${thirdUpdateValueEscaped}'  WHERE ${whereKey} = '${whereValue}'`;
-        }
-
-        if (fourthUpdateKey) {
-          const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'") : secondUpdateValue;
-          const thirdUpdateValueEscaped = typeof thirdUpdateValue === "string" ? (thirdUpdateValue as string).replace(/'/g, "\\'") : thirdUpdateValue;
-          const fourthUpdateValueEscaped = typeof fourthUpdateValue === "string" ? (fourthUpdateValue as string).replace(/'/g, "\\'") : fourthUpdateValue;
-          query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}', ${secondUpdateKey} = '${secondUpdateValueEscaped}', ${thirdUpdateKey} = '${thirdUpdateValueEscaped}', ${fourthUpdateKey} = '${fourthUpdateValueEscaped}'  WHERE ${whereKey} = '${whereValue}'`;
-        }
-
-        const [result] = await db.query(query);
-        return resolve(result);
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  }
-
-  // async updateMultiple<T>(
+  // async update<T>(
   //   table: string,
-  //   updateKeyValues: {[key: string]: T}[],
+  //   updateKey: string,
+  //   updateValue: T,
   //   whereKey: string,
   //   whereValue: T,
+  //   secondUpdateKey?: string,
+  //   secondUpdateValue?: T,
+  //   thirdUpdateKey?: string,
+  //   thirdUpdateValue?: T,
+  //   fourthUpdateKey?: string,
+  //   fourthUpdateValue?: T,
   // ): Promise<QueryResult | Error> {
   //   return new Promise(async function (resolve, reject) {
   //     try {
-
-
-  //       const updateValueEscaped = (updateValue as string).replace(/'/g, "\\'");
+  //       const updateValueEscaped = typeof updateValue === "string" ? (updateValue as string).replace(/'/g, "\\'") : updateValue;
   //       let query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}' WHERE ${whereKey} = '${whereValue}'`;
-  //       if (updateTwo) {
-  //         const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'"): secondUpdateValue;
+
+  //       if (secondUpdateKey) {
+  //         const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'") : secondUpdateValue;
   //         query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}', ${secondUpdateKey} = '${secondUpdateValueEscaped}'  WHERE ${whereKey} = '${whereValue}'`;
+  //       }
+
+  //       if (thirdUpdateKey) {
+  //         const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'") : secondUpdateValue;
+  //         const thirdUpdateValueEscaped = typeof thirdUpdateValue === "string" ? (thirdUpdateValue as string).replace(/'/g, "\\'") : thirdUpdateValue;
+  //         query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}', ${secondUpdateKey} = '${secondUpdateValueEscaped}', ${thirdUpdateKey} = '${thirdUpdateValueEscaped}'  WHERE ${whereKey} = '${whereValue}'`;
+  //       }
+
+  //       if (fourthUpdateKey) {
+  //         const secondUpdateValueEscaped = typeof secondUpdateValue === "string" ? (secondUpdateValue as string).replace(/'/g, "\\'") : secondUpdateValue;
+  //         const thirdUpdateValueEscaped = typeof thirdUpdateValue === "string" ? (thirdUpdateValue as string).replace(/'/g, "\\'") : thirdUpdateValue;
+  //         const fourthUpdateValueEscaped = typeof fourthUpdateValue === "string" ? (fourthUpdateValue as string).replace(/'/g, "\\'") : fourthUpdateValue;
+  //         query = `UPDATE ${table} SET ${updateKey} = '${updateValueEscaped}', ${secondUpdateKey} = '${secondUpdateValueEscaped}', ${thirdUpdateKey} = '${thirdUpdateValueEscaped}', ${fourthUpdateKey} = '${fourthUpdateValueEscaped}'  WHERE ${whereKey} = '${whereValue}'`;
   //       }
 
   //       const [result] = await db.query(query);
@@ -302,6 +317,35 @@ export default class DatabaseService {
   //     }
   //   });
   // }
+
+  async update<T>(
+    table: string,
+    updateValues: Record<string, T>, // Object containing columns and values to update
+    whereKey: string,
+    whereValue: T
+  ): Promise<QueryResult | Error> {
+    return new Promise(async function (resolve, reject) {
+      try {
+        // Construct the SET clause dynamically
+        const setClause = Object.keys(updateValues)
+          .map(key => {
+            const value = updateValues[key];
+            const escapedValue = typeof value === "string" ? value.replace(/'/g, "\\'") : value;
+            return `${key} = '${escapedValue}'`;
+          })
+          .join(", ");
+
+        // Construct the full query
+        const query = `UPDATE ${table} SET ${setClause} WHERE ${whereKey} = '${whereValue}'`;
+
+        const [result] = await db.query(query);
+        return resolve(result);
+      } catch (error) {
+        return reject(error);
+      }
+    });
+  }
+
 
   streamData<T>(table: string, whereKey: string, whereValue: T, res: Response) {
     const extractedValue =

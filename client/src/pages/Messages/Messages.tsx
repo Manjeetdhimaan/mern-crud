@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Users from "../../components/Users/Users";
 import useDebounce from "../../hooks/useDebounce";
@@ -26,7 +26,7 @@ import {
   CrossIcon,
 } from "../../components/UI/Icons/Icons";
 import { ILastMessage, IMessage } from "../../models/message.model";
-import { useLoaderData, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   emitDeletePrivateMsg,
   emitEditPrivateMsg,
@@ -58,7 +58,7 @@ import { messageActions } from "../../store/message/message-slice";
 import { fetchUsers } from "../../store/user/user-actions";
 import { IUser } from "../../models/user.model";
 import { messageBaseUrl } from "../../constants/local.constants";
-import { getUserEmail } from "../../util/auth";
+import { getUserEmail, getUserId } from "../../util/auth";
 
 let counterForScroll = 0;
 
@@ -80,14 +80,13 @@ export function Messages() {
   const textareaWrapperRef = useRef<HTMLDivElement>(null);
 
   const { conversationId } = useParams();
-  const loggedInUserId = useLoaderData();
+  const loggedInUserId = getUserId();
 
+  // const [conversations, setConversations] = useState<IUser[]>(useLoaderData() as IUser[]);
+  const conversations = useSelector((state: RootState) => state.message.conversations);
   const debouncedFetchUsers = useDebounce((query: string) => dispatch(fetchUsers(query)), 500);
   // Redux properties
   const dispatch = useDispatch();
-  const conversations = useSelector(
-    (state: RootState) => state.message.conversations
-  );
   const messages: IMessage[] = useSelector(
     (state: RootState) => state.message.messages
   );
@@ -102,7 +101,8 @@ export function Messages() {
   let users = useSelector(
     (state: RootState) => state.user.users
   );
-  users = users.filter((user: IUser) => +user.id !== Number(loggedInUserId) && !conversations.find(cnvs => Number(cnvs.receiverId) === +user.id));
+
+  users = useMemo(() => users.filter((user: IUser) => +user.id !== Number(loggedInUserId) && !conversations.find(cnvs => Number(cnvs.receiverId) === +user.id)), [conversations.length]);
 
   const isLoading = useSelector((state: RootState) => state.message.isLoading);
   const isSendingMsg = useSelector((state: RootState) => state.message.isSendingMsg);
@@ -113,7 +113,7 @@ export function Messages() {
     onPrivateMsg(dispatch, messageWrapper);
     onEditPrivateMessage(dispatch);
     onDeletePrivateMessage(dispatch);
-    onLastMessageInConversation(dispatch);
+    onLastMessageInConversation(conversations);
     // onDisconnect();
 
     return () => {
@@ -508,42 +508,44 @@ export function Messages() {
     },
   ];
 
-  const messageClasses = `text-cyan-50 px-3 py-1 rounded-xl inline-block max-w-[50%] text-left`;
+  const messageClasses = `text-cyan-50 px-3 py-1 rounded-xl inline-block max-w-[50%] text-left overflow-hidden`;
 
   return (
-    <section className="relative w-[80%]">
+    <section className="relative max-w-[80%]">
 
       <FileShareInMessage
         handleCancelFileSharing={handleClearFileData}
         handleFileSharing={handleFileSharing}
       />
       <MessageHeader />
-
-      <Users isConversation={searchUsers ? false : true} users={searchUsers ? users : conversations} onClickFn={searchUsers ? startCoversation : navigateToConversation}>
-        <div className={`px-6 py-3 mb-1 flex justify-between !w-[100%] sticky top-0 bg-stone-200 z-50 shadow-sm ${searchUsers ? "items-center" : "items-baseline"}`}>
-          <h2 className="text-2xl px-4">Conversations</h2>
-          <a className="cursor-pointer z-50" onClick={toggleSearchUsers}>
-            {
-              searchUsers ? <span className="font-normal">Cancel</span>
-                : <PlusIcon stroke={3.5} className="size-4" />
-            }
-          </a>
-        </div>
-        <div className="text-center">
-          {
-            searchUsers &&
-            <div className="relative">
-              <input type="text" value={searchQuery} onChange={fetchUsersWithQuery} className="w-[90%] rounded-xl outline-none px-4 h-6 font-normal text-sm" placeholder="Search..." />
+      <div>
+        <Users isConversation={searchUsers ? false : true} users={searchUsers ? users : conversations} onClickFn={searchUsers ? startCoversation : navigateToConversation}>
+          <div className={`px-6 py-3 mb-1 flex justify-between !w-[100%] sticky top-0 bg-stone-200 z-50 shadow-sm ${searchUsers ? "items-center" : "items-baseline"}`}>
+            <h2 className="text-2xl px-4">Conversations</h2>
+            <a className="cursor-pointer z-50" onClick={toggleSearchUsers}>
               {
-                searchQuery &&
-                <a className="absolute right-5 top-[5px]" onClick={onClearSearchQuery}>
-                  <CrossIcon className="size-4" stroke="1.5" />
-                </a>
+                searchUsers ? <span className="font-normal">Cancel</span>
+                  : <PlusIcon stroke={3.5} className="size-4" />
               }
-            </div>
-          }
-        </div>
-      </Users>
+            </a>
+          </div>
+          <div className="text-center">
+            {
+              searchUsers &&
+              <div className="relative">
+                <input type="text" value={searchQuery} onChange={fetchUsersWithQuery} className="w-[90%] rounded-xl outline-none pl-4 pr-8 h-6 font-normal text-sm" placeholder="Search..." />
+                {
+                  searchQuery &&
+                  <a className="absolute right-5 top-[5px]" onClick={onClearSearchQuery}>
+                    <CrossIcon className="size-4" stroke="1.5" />
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        </Users>
+      </div>
+
 
       {isLoading && (
         <div className="absolute top-[50%] left-[58%] bg-slate-800 text-white px-3 py-1 rounded z-50 flex items-center">
@@ -706,4 +708,21 @@ export function Messages() {
 
     </section>
   );
+}
+
+export async function loader() {
+  const loggedInUserId = getUserId();
+
+  const response = await httpService.get(`${messageBaseUrl}/conversations`, {
+    senderId: Number(loggedInUserId),
+  });
+
+  if (response && response.data && response.data.conversations) {
+    const conversations = response.data.conversations;
+    const localUserEmail = getUserEmail();
+    const updatedConversations = getUpdatedConversations(conversations, String(localUserEmail))
+    return updatedConversations;
+  } else {
+    return [];
+  };
 }

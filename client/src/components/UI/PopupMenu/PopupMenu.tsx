@@ -82,7 +82,7 @@ const PopupMenu: React.FC<{ payload?: IPopupMenuProps, children?: React.ReactNod
         {icon}
       </button>
       {isOpen && (
-        <div onClick={handleClickInsideMenu} className={`menu animate-scale menu-${menuPosition}`} ref={menuRef}>
+        <div onClick={handleClickInsideMenu} className={`menu menu-${menuPosition}`} ref={menuRef}>
           <ul>{children ? children : renderMenuItems(payload?.items as IMenuItem[])}</ul>
         </div>
       )}

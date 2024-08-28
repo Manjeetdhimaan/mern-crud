@@ -14,6 +14,7 @@ import {
 } from "../../../constants/socket.constants";
 import { messageActions } from "../../../store/message/message-slice";
 import { getCurrentUTCDate } from "../../../util/dates";
+import { IUser } from "../../../models/user.model";
 
 const socket = io(BASE_API_URL + "/chat");
 
@@ -124,11 +125,26 @@ export function emitLastMessageInConversation(
 }
 
 export function onLastMessageInConversation(
-  dispatch: Dispatch
+  conversations: IUser[]
 ): void {
   socket.on(LAST_MESSAGE_CONVERSATION, async (lastMessage) => {
-    // write logic to update last message.
-    dispatch(messageActions.setLastMessage(lastMessage));
+    const updatedConversations = conversations.map((conversation) => {
+      if (conversation.id === lastMessage.conversationId) {
+        // Create a new conversation object with updated lastMessage and updatedAt
+        return {
+          ...conversation,
+          lastMessage: { ...lastMessage },
+          updatedAt: getCurrentUTCDate().toISOString(),
+        };
+      }
+      return conversation;
+    });
+
+    updatedConversations.sort(
+      (a, b) =>
+        new Date(String(b.lastMessage?.lastMessageCreatedAt)).getTime() -
+        new Date(String(a.lastMessage?.lastMessageCreatedAt)).getTime()
+    );
   });
 }
 

@@ -12,7 +12,7 @@ export default {
         "scale" : {
           "0%": {
             opacity: "0.5",
-            transform: "scale(1.01)"
+            transform: "scale(1.5)"
           },
           "100%": {
             opacity: 1,
@@ -22,7 +22,7 @@ export default {
       },
       animation: {
         "blink-border": "blink-border 0.8s",
-        "scale": "scale 0.2s"
+        "scale": "scale 0.4s"
       },
     },
   },

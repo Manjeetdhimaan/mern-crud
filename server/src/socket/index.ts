@@ -87,8 +87,7 @@ export default class Socket {
           // console.log("Edited Message recieved: ", body, messageId);
           const response = (await this.db.update(
             MESSAGES,
-            "body",
-            body,
+            { body },
             "id",
             messageId
           )) as ResultSetHeader;
@@ -128,7 +127,13 @@ export default class Socket {
         LAST_MESSAGE_CONVERSATION,
         async ({ conversationId, lastMessage, lastMessageBy, lastMessageType, lastMessageCreatedAt }) => {
           try {
-            const response = (await this.db.update(CONVERSATIONS, "lastMessage", lastMessage, "id", conversationId, "lastMessageBy", lastMessageBy, "lastMessageType", lastMessageType, "lastMessageCreatedAt", lastMessageCreatedAt
+            const valuesToUpdate = {
+              lastMessage,
+              lastMessageBy,
+              lastMessageType,
+              lastMessageCreatedAt
+            }
+            const response = (await this.db.update(CONVERSATIONS, valuesToUpdate, "id", conversationId
             )) as ResultSetHeader;
             if (response && response.affectedRows) {
               chatNamseSpace.in(room).emit(LAST_MESSAGE_CONVERSATION, {
@@ -136,13 +141,13 @@ export default class Socket {
               });
             }
           } catch (error) {
-            console.log("Error=>",error)
+            console.log("Error=>", error);
           }
         }
       );
 
       socket.on(DISCONNECT, (reason) => {
-        console.log("A user disconnected:, ", reason);
+        console.log(`A user with socket id ${socket.id} disconnected:  ${reason}`);
       });
     });
   }

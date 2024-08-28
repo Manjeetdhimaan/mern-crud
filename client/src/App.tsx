@@ -6,8 +6,9 @@ import Login from './pages/Auth/Login';
 import Signup from './pages/Auth/Signup';
 import Layout from './components/Layout/Layout';
 import Snackbar from './components/UI/Snackbar/Snackbar';
+import HttpProgressBar from './components/UI/Nprogress/Nprogress';
 
-import { getUserId, tokenLoader } from './util/auth';
+import { tokenLoader } from './util/auth';
 import { Messages } from './pages/Messages/Messages';
 import { action as signUpAction } from './pages/Auth/Signup';
 import { action as logoutAction } from './pages/Logout/Logout';
@@ -26,11 +27,11 @@ const router = createBrowserRouter([
       {
         path: 'messages',
         element: <Messages />,
-        loader: getUserId,
+        // loader: conversationLoader,
         children: [
           {
             path: ':conversationId',
-            element: <Messages />
+            element: <Messages />,
           },
         ]
       },
@@ -56,6 +57,7 @@ function App() {
   const { message, type, isOpen, duration } = useSelector((state: RootState) => state.snackbar);
   return (
     <>
+      <HttpProgressBar />
       {isOpen && message && type && (
         <Snackbar message={message} type={type} duration={duration} onClose={() => dispatch(closeSnackbar())} />
       )}
@@ -85,6 +87,7 @@ export default App;
 // # Make mobile responsive
 // # Delete all messages of conversation when deleting a conversation
 // # Implement search functionality in conversations list
+// # Search filter should be on backend
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE
