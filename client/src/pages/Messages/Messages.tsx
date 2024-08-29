@@ -25,9 +25,11 @@ import {
   DownloadIcon,
   CrossIcon,
 } from "../../components/UI/Icons/Icons";
+import { RootState } from "../../store";
 import { ILastMessage, IMessage } from "../../models/message.model";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  disconnect,
   emitDeletePrivateMsg,
   emitEditPrivateMsg,
   emitLastMessageInConversation,
@@ -51,14 +53,14 @@ import {
   fetchPreviousMessages,
   getUpdatedConversations,
 } from "../../store/message/message-actions";
-import { RootState } from "../../store";
+import { IUser } from "../../models/user.model";
 import { getCurrentUTCDate } from "../../util/dates";
+import { getUserEmail, getUserId } from "../../util/auth";
+import { fetchUsers } from "../../store/user/user-actions";
+import { messageBaseUrl } from "../../constants/local.constants";
 import { maxFileSizeInMB } from "../../constants/files.constants";
 import { messageActions } from "../../store/message/message-slice";
-import { fetchUsers } from "../../store/user/user-actions";
-import { IUser } from "../../models/user.model";
-import { messageBaseUrl } from "../../constants/local.constants";
-import { getUserEmail, getUserId } from "../../util/auth";
+import { commonUIActions } from "../../store/ui/common/common-reducer";
 
 let counterForScroll = 0;
 
@@ -102,7 +104,7 @@ export function Messages() {
     (state: RootState) => state.user.users
   );
 
-  users = useMemo(() => users.filter((user: IUser) => +user.id !== Number(loggedInUserId) && !conversations.find(cnvs => Number(cnvs.receiverId) === +user.id)), [conversations.length]);
+  users = useMemo(() => users.filter((user: IUser) => +user.id !== Number(loggedInUserId) && !conversations.find(cnvs => Number(cnvs.receiverId) === +user.id)), [users.length, searchQuery]);
 
   const isLoading = useSelector((state: RootState) => state.message.isLoading);
   const isSendingMsg = useSelector((state: RootState) => state.message.isSendingMsg);
@@ -117,7 +119,7 @@ export function Messages() {
     // onDisconnect();
 
     return () => {
-      // disconnect();
+      disconnect();
       offPrivateMsg();
       offEditPrivateMsg();
       offDeletePrivateMsg();
@@ -265,7 +267,7 @@ export function Messages() {
     // setMessageId(0);
   }, [currentMsg, conversationId, loggedInUserId]);
 
-  const handleInput = () => {
+  const handleInput = (): void => {
     setTimeout(() => {
       if (textareaRef.current && textareaWrapperRef.current) {
         if (textareaRef.current.scrollHeight > 50) {
@@ -332,12 +334,12 @@ export function Messages() {
           fileReader.readAsDataURL(file);
         }
       }
-      dispatch(messageActions.setModelIsOpen(true));
+      dispatch(commonUIActions.setModelIsOpen(true));
     }
   };
 
-  const handleFileSharing = async () => {
-    dispatch(messageActions.setModelIsOpen(false));
+  const handleFileSharing = async (): Promise<void> => {
+    dispatch(commonUIActions.setModelIsOpen(false));
     // handle file sharing, create api on backend to handle files
     if (files) {
       dispatch(messageActions.setSendingMsg(true));
@@ -364,16 +366,16 @@ export function Messages() {
     handleClearFileData();
   };
 
-  const handleClearFileData = () => {
+  const handleClearFileData = (): void => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
     setFiles(null);
     dispatch(messageActions.clearFilesBase64([]));
-    dispatch(messageActions.setModelIsOpen(false));
+    dispatch(commonUIActions.setModelIsOpen(false));
   };
 
-  const handleDownLoadFile = <T extends unknown>(_: string, message: T) => {
+  const handleDownLoadFile = <T extends unknown>(_: string, message: T): void => {
     const fileUrl = (message as IMessage).body;
     downloadFile(fileUrl as string, fileUrl as string);
   }
@@ -430,13 +432,13 @@ export function Messages() {
     }
   };
 
-  const toggleSearchUsers = async () => {
+  const toggleSearchUsers = async (): Promise<void> => {
     setSearchUsers((prev) => {
       if (!prev) {
         dispatch(fetchUsers(searchQuery));
         setSearchQuery("");
       }
-      return !prev
+      return !prev;
     });
   }
 
@@ -710,7 +712,7 @@ export function Messages() {
   );
 }
 
-export async function loader() {
+export async function loader(): Promise<IUser[] | []> {
   const loggedInUserId = getUserId();
 
   const response = await httpService.get(`${messageBaseUrl}/conversations`, {

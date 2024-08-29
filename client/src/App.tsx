@@ -14,12 +14,13 @@ import { action as signUpAction } from './pages/Auth/Signup';
 import { action as logoutAction } from './pages/Logout/Logout';
 import { RootState } from './store';
 import { closeSnackbar } from './store/ui/snackbar/snackbar-slice';
+import PageNotFound from './components/PageNotFound/PageNotFound';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <Layout />,
-    // errorElement: <ErrorPage />,
+    errorElement: <Snackbar message="An error occured" type="error" duration={3000} onClose={() => null} />,
     id: 'root',
     loader: tokenLoader,
     children: [
@@ -39,7 +40,12 @@ const router = createBrowserRouter([
         path: 'logout',
         action: logoutAction,
       },
+      {
+        path: '*',
+        element: <PageNotFound />
+      }
     ],
+
   },
   {
     path: 'login',
@@ -50,6 +56,7 @@ const router = createBrowserRouter([
     element: <Signup />,
     action: signUpAction,
   },
+
 ]);
 
 function App() {
@@ -86,7 +93,6 @@ export default App;
 // # BUG - Web socket connection is failing sometime.
 // # Make mobile responsive
 // # Delete all messages of conversation when deleting a conversation
-// # Implement search functionality in conversations list
 // # Search filter should be on backend
 
 // COMPLETED
@@ -112,3 +118,4 @@ export default App;
 // # Sort conversations list based on last message received or sent. - DONE
 // # Add user search feature / Only search users which are not in the list. - DONE
 // # navigate to /messages/:conversationID  whenever user clicked on any user name/email to start a new conversation. - DONE
+// # Implement search functionality in conversations list - DONE

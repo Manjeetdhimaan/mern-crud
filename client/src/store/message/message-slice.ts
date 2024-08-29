@@ -14,8 +14,7 @@ const initialState: IMessageInitialState = {
   isLoading: false,
   isSendingMsg: false,
   // Share file in messages: Properties
-  filesBase64: [],
-  modelIsOpen: false,
+  filesBase64: []
 };
 
 const messageSlice = createSlice({
@@ -128,10 +127,6 @@ const messageSlice = createSlice({
 
     clearFilesBase64(state, action) {
       state.filesBase64 = action.payload || [];
-    },
-
-    setModelIsOpen(state, action) {
-      state.modelIsOpen = action.payload;
     },
 
     setLastMessage(state, action) {

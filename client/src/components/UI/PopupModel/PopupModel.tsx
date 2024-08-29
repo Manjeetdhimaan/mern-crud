@@ -39,7 +39,7 @@ const Model: React.FC<{
     return createPortal(
       open && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50"
           onClick={handleOutsideClick} // Detect clicks outside
         >
           <dialog ref={dialog} className="animate-scale z-[-1] rounded">

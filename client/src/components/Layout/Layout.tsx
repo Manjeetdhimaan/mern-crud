@@ -31,8 +31,7 @@ function RootLayout() {
     return (
         <>
             <SideBar />
-
-            <main className='fixed top-0 left-[20%]'>
+            <main className='fixed top-0 left-[20%] w-[100%]'>
                 {/* {navigation.state === 'loading' && <p>Loading...</p>} */}
                 <Outlet />
             </main>

@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    showHttpProgressBar: false
+    showHttpProgressBar: false,
+    modelIsOpen: false
 };
 
 const commonUISlice = createSlice({
@@ -11,9 +12,14 @@ const commonUISlice = createSlice({
         toggleProgressBar(state, action) {
             state.showHttpProgressBar = action.payload;
         },
+
+        setModelIsOpen(state, action) {
+            state.modelIsOpen = action.payload;
+          },
+      
     },
 });
 
-export const { toggleProgressBar } = commonUISlice.actions;
+export const commonUIActions = commonUISlice.actions;
 
 export default commonUISlice;

@@ -21,7 +21,7 @@ class HttpClient {
         );
     }
 
-    _handleRequest = (config: InternalAxiosRequestConfig<AxiosHeaders>): InternalAxiosRequestConfig<AxiosHeaders>  => {
+    private _handleRequest = (config: InternalAxiosRequestConfig<AxiosHeaders>): InternalAxiosRequestConfig<AxiosHeaders>  => {
         const token = getAuthToken();
         window.dispatchEvent(new Event('httpRequestStart'));
         if (token) {
@@ -30,25 +30,26 @@ class HttpClient {
         return config;
     };
 
-    _handleRequestError = (error: Error) => {
+    private _handleRequestError = (error: Error): Promise<Error> => {
         window.dispatchEvent(new Event('httpRequestEnd'));
         return Promise.reject(error);
     };
 
-    _handleResponse = (response: AxiosResponse) => {
+    private _handleResponse = (response: AxiosResponse): AxiosResponse => {
         window.dispatchEvent(new Event('httpRequestEnd'));
         return response;
     };
 
-    _handleResponseError = (error: Error) => {
+    private _handleResponseError = (error: Error): Promise<Error> => {
+        window.dispatchEvent(new Event('httpRequestEnd'));
         return Promise.reject(error);
     };
 
-    get = <T>(url: string, queryparams?: T, config?: AxiosHeaders) => {
+    get = <T>(url: string, queryparams?: T, config?: AxiosHeaders): Promise<AxiosResponse> => {
         return this.instance.get(url, { params: queryparams, ...config });
     };
 
-    getWithStream = (url: string, queryparams?: any, config?: AxiosHeaders) => {
+    getWithStream = (url: string, queryparams?: any, config?: AxiosHeaders): Promise<AxiosResponse> => {
         return this.instance.get(url, {
             params: queryparams,
             responseType: 'blob',  // Set responseType to 'blob' for streaming
@@ -56,15 +57,15 @@ class HttpClient {
         });
     };
 
-    post = <T>(url: string, data: T, config?: AxiosHeaders) => {
+    post = <T>(url: string, data: T, config?: AxiosHeaders): Promise<AxiosResponse> => {
         return this.instance.post(url, data, {...config});
     };
 
-    put = <T>(url: string, data: T, config?: AxiosHeaders) => {
+    put = <T>(url: string, data: T, config?: AxiosHeaders): Promise<AxiosResponse> => {
         return this.instance.put(url, data, {...config});
     };
 
-    delete = (url: string, config?: AxiosHeaders) => {
+    delete = (url: string, config?: AxiosHeaders): Promise<AxiosResponse> => {
         return this.instance.delete(url, {...config});
     };
 }

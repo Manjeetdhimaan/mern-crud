@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 
-const HttpProgressBar: React.FC = () => {
+const HttpProgressBar: React.FC = (): null => {
 
   useEffect(() => {
     NProgress.configure({ showSpinner: false, speed: 500 });
