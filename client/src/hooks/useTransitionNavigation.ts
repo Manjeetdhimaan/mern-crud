@@ -16,9 +16,9 @@ export default function useTransitionNavigation(): (e: MouseEvent<HTMLAnchorElem
         const body = document.querySelector('body');
         if (body) {
             body.classList.add('page-transition');
-            await sleep(200);
+            await sleep(0); //200
             navigate(href);
-            await sleep(200);
+            await sleep(0); //200
             body.classList.remove('page-transition');
         }
     }

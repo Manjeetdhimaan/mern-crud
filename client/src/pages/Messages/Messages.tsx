@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import Users from "../../components/Users/Users";
 import useDebounce from "../../hooks/useDebounce";
@@ -29,7 +29,6 @@ import { RootState } from "../../store";
 import { ILastMessage, IMessage } from "../../models/message.model";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  disconnect,
   emitDeletePrivateMsg,
   emitEditPrivateMsg,
   emitLastMessageInConversation,
@@ -100,11 +99,13 @@ export function Messages() {
   const disableLoadPreviosMsg = useSelector(
     (state: RootState) => state.message.disableLoadPreviosMsg
   );
+  const conversationsMenuOpen = useSelector((state: RootState) => state.message.conversationsMenuOpen)
+
   let users = useSelector(
     (state: RootState) => state.user.users
   );
 
-  users = useMemo(() => users.filter((user: IUser) => +user.id !== Number(loggedInUserId) && !conversations.find(cnvs => Number(cnvs.receiverId) === +user.id)), [users.length, searchQuery]);
+  users = users.filter((user: IUser) => +user.id !== Number(loggedInUserId) && !conversations.find(cnvs => Number(cnvs.receiverId) === +user.id)), [users.length, searchQuery];
 
   const isLoading = useSelector((state: RootState) => state.message.isLoading);
   const isSendingMsg = useSelector((state: RootState) => state.message.isSendingMsg);
@@ -115,11 +116,13 @@ export function Messages() {
     onPrivateMsg(dispatch, messageWrapper);
     onEditPrivateMessage(dispatch);
     onDeletePrivateMessage(dispatch);
-    onLastMessageInConversation(conversations);
+    onLastMessageInConversation(conversations, dispatch);
     // onDisconnect();
-
+    if (conversationId) {
+      dispatch(messageActions.setConversationsMenuOpen(false))
+    }
     return () => {
-      disconnect();
+      // disconnect();
       offPrivateMsg();
       offEditPrivateMsg();
       offDeletePrivateMsg();
@@ -292,6 +295,7 @@ export function Messages() {
     if (conversationId === cnvsId) {
       return;
     } else {
+
       navigate(`/messages/${cnvsId}`);
     }
   };
@@ -468,6 +472,7 @@ export function Messages() {
       );
       navigate(`/messages/${cnvsId}`);
       setSearchUsers(false);
+      snackbarService.success('User added!');
     } catch (error) {
       console.log(error);
       // Inform user about the error
@@ -513,7 +518,7 @@ export function Messages() {
   const messageClasses = `text-cyan-50 px-3 py-1 rounded-xl inline-block max-w-[50%] text-left overflow-hidden`;
 
   return (
-    <section className="relative max-w-[80%]">
+    <section className="relative lg:max-w-[80%]">
 
       <FileShareInMessage
         handleCancelFileSharing={handleClearFileData}
@@ -521,7 +526,7 @@ export function Messages() {
       />
       <MessageHeader />
       <div>
-        <Users isConversation={searchUsers ? false : true} users={searchUsers ? users : conversations} onClickFn={searchUsers ? startCoversation : navigateToConversation}>
+        <Users conversationsMenuOpen={conversationsMenuOpen} isConversation={searchUsers ? false : true} users={searchUsers ? users : conversations} onClickFn={searchUsers ? startCoversation : navigateToConversation}>
           <div className={`px-6 py-3 mb-1 flex justify-between !w-[100%] sticky top-0 bg-stone-200 z-50 shadow-sm ${searchUsers ? "items-center" : "items-baseline"}`}>
             <h2 className="text-2xl px-4">Conversations</h2>
             <a className="cursor-pointer z-50" onClick={toggleSearchUsers}>
@@ -558,10 +563,10 @@ export function Messages() {
       )}
       {conversationId && conversations.length ? (
         <div
-          className="p-10 max-h-[75vh] w-[75%] overflow-x-hidden right-[0] absolute top-[75px] scrollbar-thin min-h-[75vh]"
+          className="p-4 lg:p-10 pb-26 sm:pb-26 lg:pb-28 max-h-[70vh] min-h-[70vh] w-[100%] sm:w-[60%] lg:w-[75%] overflow-x-hidden right-[0] absolute top-[75px] scrollbar-thin "
           ref={messageWrapper}
         >
-          <div className="h-4/5 pr-[8%] pl-[2%] scrollbar-thin max-h-[80%]">
+          <div className="h-4/5 lg:pr-[8%] pl-[2%] scrollbar-thin max-h-[80%]">
             {
               <>
                 <LoadPreviousMessages
@@ -647,7 +652,7 @@ export function Messages() {
             </div>
           )}
           {conversationId && (
-            <div className="fixed bottom-4 w-[50%] flex mt-[40px]">
+            <div className="fixed bottom-4 w-[92%] sm:w-[50%] flex mt-[40px]">
               <div
                 className={`w-[100%] bg-red-50 rounded-3xl max-h-52 border-2 py-1 flex items-end justify-around ${isEditingMsg && "animate-blink-border"
                   }`}
@@ -700,7 +705,7 @@ export function Messages() {
       ) : (
         <div className="max-h-screen inline-block text-center">
           {!isLoading && (
-            <div className="text-center absolute top-[20%] w-[80%]">
+            <div className="text-center absolute top-[20%] right-0 w-[80%]">
               {!conversationId ? "Please select a conversation" : "No messages"}
             </div>
           )}

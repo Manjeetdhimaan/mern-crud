@@ -19,13 +19,14 @@ export interface ILastMessage {
 
 export interface IMessageInitialState {
   page: number;
-  conversationId: string;
   totalCount: number;
+  isLoading: boolean;
   messages: IMessage[];
   conversations: IUser[];
+  conversationId: string;
   receiverUser: IUser | null;
   disableLoadPreviosMsg: boolean;
-  isLoading: boolean;
+  conversationsMenuOpen: boolean;
   // Share file in messages
   filesBase64: IFileBase64[];
   isSendingMsg: boolean

@@ -15,7 +15,7 @@ function Signup() {
 
     return (
         <section className='flex justify-center h-screen items-center'>
-            <Form method="post" className='w-[30%]'>
+            <Form method="post" className="w-[90%] sm:w-[80%] md:w-[40%] lg:w-[30%]">
                 <h2 className='text-4xl mb-8'>Sign up</h2>
                 {data && data.message && <p className='text-red-600'>{data.message}</p>}
                 <p>

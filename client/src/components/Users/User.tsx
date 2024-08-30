@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Image from "../UI/Image/Image";
@@ -8,9 +9,9 @@ import { IUser } from "../../models/user.model";
 import { IMenuItem } from "../../models/ui.model";
 import { time } from "../Message/RenderMessageDate";
 import { getDate, getMediumDate, today } from "../../util/dates";
+import snackbarService from "../../store/ui/snackbar/snackbar-actions";
 import { deleteConversation } from "../../store/message/message-actions";
 import ConfirmModel from "../UI/Confirm/ConfirmModel";
-import { useState } from "react";
 
 const clampClasses = "overflow-hidden text-ellipsis whitespace-nowrap line-clamp-1 block";
 
@@ -36,6 +37,7 @@ const User: React.FC<{ user: IUser, isConversation: boolean, loggedInUserId: num
       navigate(`/messages`);
     }
     setDeletingConversation(false);
+    snackbarService.success('Conversation deleted!');
   }
 
   const menuItems: IMenuItem[] = [
@@ -97,7 +99,7 @@ const User: React.FC<{ user: IUser, isConversation: boolean, loggedInUserId: num
           </div>
           {
             isConversation &&
-            <a onClick={(e) => e.stopPropagation()} className="absolute right-2 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity">
+            <a onClick={(e) => e.stopPropagation()} className="absolute right-2 opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity">
               <PopupMenu payload={{ items: menuItems, data: user.id }} closeOnClick={false} />
             </a>
           }

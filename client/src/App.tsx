@@ -68,6 +68,8 @@ function App() {
       {isOpen && message && type && (
         <Snackbar message={message} type={type} duration={duration} onClose={() => dispatch(closeSnackbar())} />
       )}
+     
+
       <RouterProvider router={router} />
     </>
   )
@@ -76,24 +78,31 @@ function App() {
 export default App;
 
 // TO DO:
-// # Add option to preview and download files.
-// # Handle form validation properly.
-// # Add reply feature in chat.
-// # Add animation using framer-motion.
-// # Show flag on edited message.
 // # Add video and voice chat options
 // # Add functionality to mark messages: Delievered and Seen.
-// # Replace fetch function with axios in signup.
-// # Update database tables with correct spellings of values inside them.
-// # Auto reload previous messages when reached top of container. - not important
+// # Add reply feature in chat.
+// # Make mobile responsive
+// # Delete all messages of conversation when deleting a conversation
+// # Add option to preview and download files.
 // # Validation on backend to edit and delete message only by owner
+// # Update database tables with correct spellings of values inside them.
+// # Handle form validation properly.
+// # Add animation using framer-motion.
+// # Show flag on edited message.
+// # Replace fetch function with axios in signup.
+// # Auto reload previous messages when reached top of container. - not important
 // # Create common service to store and fetch data from localstorage in ENCRYPTED form.
 // # Create common service to set and get document title and other meta data.
 // # Redirect URL when user tries to access protected routes without login
 // # BUG - Web socket connection is failing sometime.
-// # Make mobile responsive
-// # Delete all messages of conversation when deleting a conversation
 // # Search filter should be on backend
+
+// # Make mobile responsive ----
+//                             |---login page
+//                             |---side bar
+//                             |---chatting page
+//                             |---Layout page
+
 
 // COMPLETED
 // # Implement pagination on Get Messages -DONE

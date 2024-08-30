@@ -13,6 +13,7 @@ const initialState: IMessageInitialState = {
   disableLoadPreviosMsg: false,
   isLoading: false,
   isSendingMsg: false,
+  conversationsMenuOpen : true,
   // Share file in messages: Properties
   filesBase64: []
 };
@@ -117,6 +118,10 @@ const messageSlice = createSlice({
 
     setSendingMsg(state, action) {
       state.isSendingMsg = action.payload;
+    },
+
+    setConversationsMenuOpen(state, action) {
+      state.conversationsMenuOpen = action.payload;
     },
 
     // Files sharing methods

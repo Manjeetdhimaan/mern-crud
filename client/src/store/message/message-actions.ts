@@ -2,11 +2,11 @@ import { Dispatch } from "@reduxjs/toolkit";
 
 import http from "../../services/http/http.service";
 import snackbarService from "../ui/snackbar/snackbar-actions";
+import { getUserEmail } from "../../util/auth";
 import { IUser } from "../../models/user.model";
 import { messageActions } from "./message-slice";
 import { Conversation } from "../../models/conversation.model";
 import { messageBaseUrl } from "../../constants/local.constants";
-import { getUserEmail } from "../../util/auth";
 
 function getUpdatedConversations(conversations: Conversation[], localUserEmail: string): IUser[] {
   const updatedConversations = conversations.map(
@@ -104,6 +104,7 @@ const fetchMessages = (conversationId: string): any => {
             totalCount: data.totalCount,
           })
         );
+        
       } else {
         dispatch(
           messageActions.setMessages({
@@ -116,6 +117,7 @@ const fetchMessages = (conversationId: string): any => {
           })
         );
       }
+      dispatch(messageActions.setConversationsMenuOpen(false));
     } catch (error) {
     } finally {
       dispatch(messageActions.setLoading(false));

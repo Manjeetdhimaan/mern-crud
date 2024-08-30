@@ -125,7 +125,8 @@ export function emitLastMessageInConversation(
 }
 
 export function onLastMessageInConversation(
-  conversations: IUser[]
+  conversations: IUser[],
+  dispatch: Dispatch
 ): void {
   socket.on(LAST_MESSAGE_CONVERSATION, async (lastMessage) => {
     const updatedConversations = conversations.map((conversation) => {
@@ -145,6 +146,8 @@ export function onLastMessageInConversation(
         new Date(String(b.lastMessage?.lastMessageCreatedAt)).getTime() -
         new Date(String(a.lastMessage?.lastMessageCreatedAt)).getTime()
     );
+
+    dispatch(messageActions.setConversations({conversations: updatedConversations }))
   });
 }
 

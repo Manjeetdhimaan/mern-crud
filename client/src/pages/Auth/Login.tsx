@@ -47,7 +47,7 @@ function Login() {
       return navigate("/");
     } catch (error: unknown) {
       const err = error as AxiosError;
-      const errorMsg = (err.response?.data as Error).message;
+      const errorMsg = (err.response?.data as Error)?.message;
       if (errorMsg) {
         setError(errorMsg);
       } else {
@@ -60,7 +60,7 @@ function Login() {
 
   return (
     <section className="flex justify-center h-screen items-center">
-      <form onSubmit={login} className="w-[30%]">
+      <form onSubmit={login} className="w-[90%] sm:w-[80%] md:w-[40%] lg:w-[30%]">
         <h2 className="text-4xl mb-8">Log in</h2>
         {error && <p className="text-red-600">{error}</p>}
         <p>
