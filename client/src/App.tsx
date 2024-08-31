@@ -96,6 +96,7 @@ export default App;
 // # Redirect URL when user tries to access protected routes without login
 // # BUG - Web socket connection is failing sometime.
 // # Search filter should be on backend
+// # Detect Hyper links sent in chat and show them as clickable links
 
 // # Make mobile responsive ----
 //                             |---login page

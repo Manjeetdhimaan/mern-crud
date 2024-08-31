@@ -567,7 +567,7 @@ export function Messages() {
       )}
       {conversationId && conversations.length ? (
         <div
-          className="p-4 lg:p-10 pb-26 sm:pb-26 lg:pb-28 max-h-[70vh] min-h-[70vh] w-[100%] sm:w-[60%] lg:w-[75%] overflow-x-hidden right-[0] absolute top-[75px] scrollbar-thin "
+          className="p-4 pb-28 max-h-[70vh] min-h-[70vh] w-[100%] overflow-x-hidden right-[0] absolute top-[75px] scrollbar-thin lg:p-10 sm:w-[60%] md:pb-24 lg:w-[75%]"
           ref={messageWrapper}
         >
           <div className="h-4/5 lg:pr-[8%] pl-[2%] scrollbar-thin max-h-[80%]">
