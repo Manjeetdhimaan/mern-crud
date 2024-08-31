@@ -6,7 +6,7 @@ import { getUserEmail } from "../../util/auth";
 import { IUser } from "../../models/user.model";
 import { messageActions } from "./message-slice";
 import { Conversation } from "../../models/conversation.model";
-import { messageBaseUrl } from "../../constants/local.constants";
+import { messageBaseUrl } from "../../constants/api.constants";
 
 function getUpdatedConversations(conversations: Conversation[], localUserEmail: string): IUser[] {
   const updatedConversations = conversations.map(

@@ -1,7 +1,8 @@
 import { Dispatch } from "@reduxjs/toolkit";
+
 import http from "../../services/http/http.service";
-import { userBaseUrl } from "../../constants/local.constants";
 import { userActions } from "./user-slice";
+import { userBaseUrl } from "../../constants/api.constants";
 
 const fetchUsers = (searchQuery?: string): any => {
     return async (dispatch: Dispatch): Promise<void> => {

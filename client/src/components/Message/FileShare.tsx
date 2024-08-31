@@ -12,7 +12,7 @@ const FileShareInMessage: React.FC<{
     (state: RootState) => state.message.filesBase64
   );
   const modelIsOpen = useSelector(
-    (state: RootState) => state.message.modelIsOpen
+    (state: RootState) => state.commonUI.modelIsOpen
   );
 
   return (

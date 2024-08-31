@@ -1,6 +1,6 @@
 import http from "./http.service";
-import { messageBaseUrl } from "../../constants/local.constants";
 import { IMessage } from "../../models/message.model";
+import { messageBaseUrl } from "../../constants/api.constants";
 
 
 class MessageService {

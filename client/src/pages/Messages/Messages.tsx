@@ -56,7 +56,7 @@ import { IUser } from "../../models/user.model";
 import { getCurrentUTCDate } from "../../util/dates";
 import { getUserEmail, getUserId } from "../../util/auth";
 import { fetchUsers } from "../../store/user/user-actions";
-import { messageBaseUrl } from "../../constants/local.constants";
+import { messageBaseUrl } from "../../constants/api.constants";
 import { maxFileSizeInMB } from "../../constants/files.constants";
 import { messageActions } from "../../store/message/message-slice";
 import { commonUIActions } from "../../store/ui/common/common-reducer";

@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const jwt_helper_1 = __importDefault(require("../middlewares/jwt-helper"));
+const messages_controller_1 = __importDefault(require("../controllers/messages.controller"));
+const file_upload_1 = __importDefault(require("../middlewares/file-upload"));
+const router = express_1.default.Router();
+const messageCtrl = new messages_controller_1.default();
+const verifyJwtToken = new jwt_helper_1.default().verifyJwtToken;
+const uploadMiddleware = new file_upload_1.default(String(process.env.UPLOAD_FOLDER));
+router.post('/start', verifyJwtToken, messageCtrl.startConversation);
+router.get('/get-messages', verifyJwtToken, messageCtrl.getMessages);
+router.get('/conversations', verifyJwtToken, messageCtrl.getConversations);
+// router.put('/update-last-message', verifyJwtToken, messageCtrl.updateLastMessageInConversation);
+router.post('/private-message', verifyJwtToken, uploadMiddleware.getMiddleware().single('file'), messageCtrl.privateMessageWithFiles);
+router.delete('/delete-conversation/:id', verifyJwtToken, messageCtrl.permanentDeleteConversation);
+exports.default = router;

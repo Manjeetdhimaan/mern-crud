@@ -1,7 +1,7 @@
 import axios, { AxiosHeaders, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 import { getAuthToken } from '../../util/auth';
-import { BASE_API_URL } from '../../constants/local.constants';
+import { BASE_API_URL } from '../../constants/api.constants';
 
 class HttpClient {
     instance: AxiosInstance;

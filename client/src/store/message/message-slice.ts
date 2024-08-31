@@ -89,7 +89,9 @@ const messageSlice = createSlice({
 
     setConversations(state, action) {
       state.conversations = action.payload.conversations;
-      state.totalCount = action.payload.totalCount;
+      if(action.payload.totalCount) {
+        state.totalCount = action.payload.totalCount;
+      }
     },
 
     setConversationsOnDelete(state, action) {

@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DISCONNECT = exports.CONNECTION = exports.JOIN = exports.LAST_MESSAGE_CONVERSATION = exports.DELETE_PRIVATE_MESSAGE = exports.EDIT_PRIVATE_MESSAGE = exports.PRIVATE_MESSAGE = void 0;
+exports.PRIVATE_MESSAGE = 'private_message';
+exports.EDIT_PRIVATE_MESSAGE = 'edit_private_message';
+exports.DELETE_PRIVATE_MESSAGE = 'delete_private_message';
+exports.LAST_MESSAGE_CONVERSATION = 'last_message_conversation';
+exports.JOIN = 'join';
+exports.CONNECTION = 'connection';
+exports.DISCONNECT = 'disconnect';

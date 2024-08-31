@@ -2,7 +2,6 @@ import { io } from "socket.io-client";
 import { Dispatch } from "@reduxjs/toolkit";
 
 import { ILastMessage, IMessage } from "../../../models/message.model";
-import { BASE_API_URL } from "../../../constants/local.constants";
 import {
   CONNECT,
   DELETE_PRIVATE_MESSAGE,
@@ -12,9 +11,10 @@ import {
   LAST_MESSAGE_CONVERSATION,
   PRIVATE_MESSAGE,
 } from "../../../constants/socket.constants";
+import { IUser } from "../../../models/user.model";
 import { messageActions } from "../../../store/message/message-slice";
 import { getCurrentUTCDate } from "../../../util/dates";
-import { IUser } from "../../../models/user.model";
+import { BASE_API_URL } from "../../../constants/api.constants";
 
 const socket = io(BASE_API_URL + "/chat");
 
@@ -146,7 +146,6 @@ export function onLastMessageInConversation(
         new Date(String(b.lastMessage?.lastMessageCreatedAt)).getTime() -
         new Date(String(a.lastMessage?.lastMessageCreatedAt)).getTime()
     );
-
     dispatch(messageActions.setConversations({conversations: updatedConversations }))
   });
 }

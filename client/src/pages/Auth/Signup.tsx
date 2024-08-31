@@ -5,7 +5,7 @@ import {
     useActionData,
     useNavigation,
 } from 'react-router-dom';
-import { BASE_API_URL } from '../../constants/local.constants';
+import { BASE_API_URL } from '../../constants/api.constants';
 
 function Signup() {
     const data: any = useActionData();
