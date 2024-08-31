@@ -116,7 +116,7 @@ export function Messages() {
     onPrivateMsg(dispatch, messageWrapper);
     onEditPrivateMessage(dispatch);
     onDeletePrivateMessage(dispatch);
-    onLastMessageInConversation(conversations, dispatch);
+    
     // onDisconnect();
     if (conversationId) {
       dispatch(messageActions.setConversationsMenuOpen(false))
@@ -129,6 +129,10 @@ export function Messages() {
       offLastMessageInConversation();
     };
   }, []);
+
+  useEffect(() => {
+    onLastMessageInConversation(conversations, dispatch);
+  }, [conversations.length]);
 
   useEffect(() => {
     dispatch(fetchConversations(Number(loggedInUserId)));

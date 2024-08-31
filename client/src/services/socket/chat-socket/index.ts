@@ -140,7 +140,6 @@ export function onLastMessageInConversation(
       }
       return conversation;
     });
-
     updatedConversations.sort(
       (a, b) =>
         new Date(String(b.lastMessage?.lastMessageCreatedAt)).getTime() -
