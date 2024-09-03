@@ -119,7 +119,7 @@ export function Messages() {
     
     // onDisconnect();
     if (conversationId) {
-      dispatch(messageActions.setConversationsMenuOpen(false))
+      dispatch(messageActions.setConversationsMenuOpen(false));
     }
     return () => {
       // disconnect();
@@ -127,6 +127,7 @@ export function Messages() {
       offEditPrivateMsg();
       offDeletePrivateMsg();
       offLastMessageInConversation();
+      dispatch(messageActions.setConversationsMenuOpen(true));
     };
   }, []);
 

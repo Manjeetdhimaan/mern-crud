@@ -6,15 +6,15 @@ import Login from './pages/Auth/Login';
 import Signup from './pages/Auth/Signup';
 import Layout from './components/Layout/Layout';
 import Snackbar from './components/UI/Snackbar/Snackbar';
+import PageNotFound from './components/PageNotFound/PageNotFound';
 import HttpProgressBar from './components/UI/Nprogress/Nprogress';
 
+import { RootState } from './store';
 import { tokenLoader } from './util/auth';
 import { Messages } from './pages/Messages/Messages';
 import { action as signUpAction } from './pages/Auth/Signup';
 import { action as logoutAction } from './pages/Logout/Logout';
-import { RootState } from './store';
 import { closeSnackbar } from './store/ui/snackbar/snackbar-slice';
-import PageNotFound from './components/PageNotFound/PageNotFound';
 
 const router = createBrowserRouter([
   {
@@ -97,6 +97,8 @@ export default App;
 // # BUG - Web socket connection is failing sometime.
 // # Search filter should be on backend
 // # Detect Hyper links sent in chat and show them as clickable links
+// # Bug - when chat is open and conversationId is there and go back to home page and then come back, it shows us Please select a converstion on mobile
+// # Improve UI
 
 // # Make mobile responsive ----
 //                             |---login page
