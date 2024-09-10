@@ -60,8 +60,10 @@ import { messageBaseUrl } from "../../constants/api.constants";
 import { maxFileSizeInMB } from "../../constants/files.constants";
 import { messageActions } from "../../store/message/message-slice";
 import { commonUIActions } from "../../store/ui/common/common-reducer";
+import VoiceRecorder from "../../components/Message/VoiceRecorder";
 
 let counterForScroll = 0;
+let prevKey = "";
 
 export function Messages() {
   // Local properties
@@ -116,7 +118,7 @@ export function Messages() {
     onPrivateMsg(dispatch, messageWrapper);
     onEditPrivateMessage(dispatch);
     onDeletePrivateMessage(dispatch);
-    
+
     // onDisconnect();
     if (conversationId) {
       dispatch(messageActions.setConversationsMenuOpen(false));
@@ -219,10 +221,11 @@ export function Messages() {
     }
   };
 
+
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>
   ): void => {
-    if (event.key === "Enter") {
+    if (prevKey !== "Shift" && event.key === "Enter") {
       event.preventDefault();
       onSubmit();
     }
@@ -683,6 +686,7 @@ export function Messages() {
                   ref={textareaRef}
                   rows={1}
                 ></textarea>
+
                 {isEditingMsg && (
                   <>
                     <small className="absolute left-[52px] top-0 underline text-red-500 bg-red-50 border-t-2">
@@ -697,13 +701,14 @@ export function Messages() {
                   </>
                 )}
                 <button
-                  disabled={!currentMsg || !currentMsg.trim()}
+                  // disabled={!currentMsg || !currentMsg.trim()}
                   className="rounded-2xl mb-[2.5px] mr-2"
                   onClick={onSubmit}
                 >
-                  <SendIcon />
+                  {!currentMsg || !currentMsg.trim() ? <VoiceRecorder /> : <SendIcon />}
                 </button>
               </div>
+
             </div>
           )}
         </div>

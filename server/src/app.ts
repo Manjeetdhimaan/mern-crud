@@ -38,10 +38,10 @@ export default (function app() {
     app.use("/api/v1", routes);
     app.use(errorHandler);
 
-    app.use(express.static(path.join(__dirname, '.', 'dist')));
+    app.use(express.static(path.join(__dirname, '.', 'www')));
 
     app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '.', 'dist/index.html'));
+        res.sendFile(path.join(__dirname, '.', 'www/index.html'));
     });
     return app;
 })();

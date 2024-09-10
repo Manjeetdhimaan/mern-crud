@@ -2,4 +2,5 @@ server/node_modules
 server/.env
 server/database.json
 server/public/uploads
+server/uploads
 client/node_modules
